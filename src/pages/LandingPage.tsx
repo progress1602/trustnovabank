@@ -152,7 +152,7 @@ export default function LandingPage() {
 
                    <div className="bg-gradient-to-br from-zinc-900/80 to-black p-5 rounded-[1.8rem] border border-white/5 mb-5 shadow-xl">
                       <p className="text-[7px] uppercase font-bold text-zinc-500 mb-1">Total Balance</p>
-                      <p className="text-xl font-black text-white leading-none">₦2,580,000.00</p>
+                      <p className="text-xl font-black text-white leading-none">$2,580,000.00</p>
                       <p className="text-[7px] text-zinc-600 mt-2 font-mono tracking-widest">•••• •••• •••• 4832</p>
                    </div>
 
@@ -173,8 +173,8 @@ export default function LandingPage() {
                         <span className="text-[7px] text-gold font-bold">See all</span>
                       </div>
                       {[
-                        { name: 'Transfer to Sarah', amt: '-₦120,000', color: 'text-white' },
-                        { name: 'Deposit', amt: '+₦500,000', color: 'text-green-500' },
+                        { name: 'Transfer to Sarah', amt: '-$120,000', color: 'text-white' },
+                        { name: 'Deposit', amt: '+$500,000', color: 'text-green-500' },
                       ].map((tx, i) => (
                         <div key={i} className="flex items-center justify-between p-3 bg-zinc-900/50 rounded-xl border border-white/5">
                            <div className="flex items-center gap-2">
@@ -209,7 +209,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {[
             { label: 'Happy Customers', val: '50K+', icon: Users, color: 'text-gold' },
-            { label: 'Total Transactions', val: '₦500M+', icon: Wallet, color: 'text-gold' },
+            { label: 'Total Transactions', val: '$500M+', icon: Wallet, color: 'text-gold' },
             { label: 'System Uptime', val: '99.9%', icon: ShieldCheck, color: 'text-gold' },
             { label: 'Customer Support', val: '24/7', icon: Headphones, color: 'text-gold' }
           ].map((stat, i) => (
@@ -430,7 +430,7 @@ export default function LandingPage() {
                       </div>
                       <div className="bg-zinc-900/50 p-5 rounded-2xl border border-white/5 mb-6">
                          <p className="text-[7px] text-zinc-500 uppercase font-black mb-1">Total Balance</p>
-                         <p className="text-lg font-black text-white leading-none">₦2,580,000.00</p>
+                         <p className="text-lg font-black text-white leading-none">$2,580,000.00</p>
                       </div>
                       <div className="grid grid-cols-4 gap-2 mb-6">
                         {[1,2,3,4].map(j => (
@@ -468,7 +468,7 @@ export default function LandingPage() {
                             </svg>
                             <div className="absolute inset-0 flex flex-col items-center justify-center">
                                <p className="text-[7px] text-zinc-500 uppercase font-black leading-none">TOTAL</p>
-                               <p className="text-[10px] font-black text-white">₦1,450,000</p>
+                               <p className="text-[10px] font-black text-white">$1,450,000</p>
                             </div>
                          </div>
                       </div>
@@ -476,10 +476,10 @@ export default function LandingPage() {
                       <div className="space-y-3">
                          <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-2 px-1">Category</p>
                          {[
-                            { name: 'Transfers', amt: '₦600,000', color: 'bg-gold' },
-                            { name: 'Shopping', amt: '₦350,000', color: 'bg-zinc-700' },
-                            { name: 'Bills', amt: '₦300,000', color: 'bg-zinc-800' },
-                            { name: 'Others', amt: '₦200,000', color: 'bg-zinc-900' }
+                            { name: 'Transfers', amt: '$600,000', color: 'bg-gold' },
+                            { name: 'Shopping', amt: '$350,000', color: 'bg-zinc-700' },
+                            { name: 'Bills', amt: '$300,000', color: 'bg-zinc-800' },
+                            { name: 'Others', amt: '$200,000', color: 'bg-zinc-900' }
                          ].map(cat => (
                             <div key={cat.name} className="flex justify-between items-center px-4 py-3 bg-zinc-900/50 rounded-xl border border-white/5">
                                <div className="flex items-center gap-3">
