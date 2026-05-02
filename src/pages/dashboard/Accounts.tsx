@@ -1,122 +1,98 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'motion/react';
 import { 
   Landmark, 
   TrendingUp, 
-  Wallet, 
-  ArrowRight, 
-  Globe, 
-  DollarSign, 
-  Euro, 
-  CircleDollarSign,
   Plus,
   ArrowUpRight,
   ShieldCheck,
-  History
+  History,
+  CreditCard,
+  Wallet,
+  Activity
 } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { useStore } from '@/src/lib/store';
 import { Link } from 'react-router-dom';
 
 export default function Accounts() {
-  const { balance } = useStore();
-
-  const ACCOUNT_SEGMENTS = [
-    {
-      name: 'Sovereign Checking',
-      type: 'Checking Account',
-      balance: balance,
-      currency: 'USD',
-      id: 'TNX-8820-A1',
-      color: 'gold',
-      icon: Landmark,
-      trend: '+2.4%'
-    },
-    {
-      name: 'Growth Reserve',
-      type: 'Savings Account',
-      balance: 425000.00,
-      currency: 'USD',
-      id: 'TNX-8820-S4',
-      color: 'zinc-400',
-      icon: TrendingUp,
-      trend: '+5.8%'
-    },
-    {
-      name: 'Euro-Corridor',
-      type: 'Exchange Wallet',
-      balance: 12400.00,
-      currency: 'EUR',
-      id: 'TNX-8820-E2',
-      color: 'zinc-600',
-      icon: Globe,
-      trend: '-0.2%'
-    }
-  ];
+  const { accounts, memberSince, currency } = useStore();
 
   return (
     <div className="space-y-12 animate-in fade-in duration-700">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-app-border pb-12">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-gold/10 pb-12">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-display font-black text-app-text italic tracking-tighter">
-            My <span className="gold-gradient-text">Accounts</span>
+           <div className="flex items-center gap-3 mb-4">
+              <span className="px-3 py-1 bg-gold/10 border border-gold/20 rounded-full text-[8px] font-black uppercase text-gold tracking-[0.3em] italic">
+                 Global Sovereign Node
+              </span>
+           </div>
+          <h1 className="text-4xl sm:text-5xl font-display font-black text-white italic tracking-tighter leading-none">
+            ASSET <span className="text-gold uppercase">INVENTORY</span>
           </h1>
-          <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px] mt-2">
-            Manage your multiple accounts and balances
-          </p>
+          <div className="flex items-center gap-6 mt-6">
+             <div className="flex flex-col">
+                <span className="text-zinc-600 font-black uppercase tracking-widest text-[8px]">Member Since</span>
+                <span className="text-white font-black uppercase tracking-tighter text-xs italic">{memberSince}</span>
+             </div>
+             <div className="w-px h-8 bg-gold/10" />
+             <div className="flex flex-col">
+                <span className="text-zinc-600 font-black uppercase tracking-widest text-[8px]">Protocol Status</span>
+                <div className="flex items-center gap-2">
+                   <div className="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_10px_#10B981]" />
+                   <span className="text-emerald-500 font-black uppercase tracking-tighter text-xs italic">Active Protocol</span>
+                </div>
+             </div>
+          </div>
         </div>
-        <button className="sleek-button-gold px-10 py-4 flex items-center justify-center gap-3 w-full md:w-auto">
-          <Plus size={18} strokeWidth={3} /> Request New Account
+        <button className="bg-gold text-black px-10 py-5 rounded-2xl flex items-center justify-center gap-4 w-full md:w-auto text-[11px] font-black uppercase tracking-[0.3em] italic shadow-[0_20px_50px_rgba(212,175,55,0.2)] hover:scale-105 active:scale-95 transition-all">
+          <Plus size={18} strokeWidth={3} /> INITIALIZE NEW NODE
         </button>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
-        {ACCOUNT_SEGMENTS.map((acc, i) => (
+        {accounts.map((acc, i) => (
           <motion.div
-            key={i}
+            key={acc.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
-            className="bg-app-card border border-app-border rounded-[2.5rem] p-8 group hover:border-gold/30 transition-all cursor-pointer relative overflow-hidden shadow-2xl"
+            className="bg-zinc-950 border border-gold/10 rounded-[2.5rem] p-8 group hover:border-gold/30 transition-all cursor-pointer relative overflow-hidden shadow-2xl"
           >
-            <div className="absolute top-0 right-0 p-4 sm:p-6 text-[8px] sm:text-[10px] font-black font-mono text-zinc-800 uppercase tracking-widest">{acc.id}</div>
+            <div className="absolute top-0 right-0 p-8 text-[9px] font-black font-mono text-zinc-800 uppercase tracking-widest italic">{acc.id}</div>
             
-            <div className="flex flex-col h-full space-y-8 sm:space-y-10 relative z-10">
-               <div className="flex items-center gap-4">
+            <div className="flex flex-col h-full space-y-10 relative z-10">
+               <div className="flex items-center gap-5">
                   <div className={cn(
-                    "w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center border",
-                    acc.color === 'gold' ? 'bg-gold/10 border-gold/20 text-gold shadow-[0_0_20px_rgba(212,175,55,0.1)]' : 'bg-app-bg border-app-border text-zinc-500'
+                    "w-14 h-14 rounded-2xl flex items-center justify-center border transition-transform group-hover:scale-110 duration-500",
+                    acc.type === 'Credit' ? 'bg-zinc-900 border-white/5 text-zinc-500' : 'bg-gold/10 border-gold/20 text-gold shadow-[0_0_30px_rgba(212,175,55,0.1)]'
                   )}>
-                     <acc.icon size={20} className="sm:size-[24px]" />
+                     {acc.type === 'Credit' ? <CreditCard size={24} /> : <Landmark size={24} />}
                   </div>
                   <div>
-                    <h3 className="text-lg sm:text-xl font-display font-black text-app-text italic tracking-tighter group-hover:text-gold transition-colors">{acc.name}</h3>
-                    <p className="text-zinc-600 text-[9px] uppercase font-black tracking-widest">{acc.type}</p>
+                    <h3 className="text-xl font-display font-black text-white italic tracking-tighter group-hover:text-gold transition-colors block leading-tight">{acc.name}</h3>
+                    <p className="text-zinc-600 text-[9px] uppercase font-black tracking-widest mt-1">Sovereign {acc.type} Protocol</p>
                   </div>
                </div>
 
                <div>
-                  <p className="text-zinc-500 text-[9px] font-black uppercase tracking-[0.3em] mb-2">Available Balance</p>
-                  <div className="flex items-baseline gap-2 flex-wrap">
-                     <p className="text-3xl sm:text-4xl font-display font-black text-app-text italic tracking-tighter">
-                        {acc.currency === 'USD' ? '$' : acc.currency === 'EUR' ? '€' : '£'}
-                        {acc.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.4em] mb-3 italic">Liquidity Balance</p>
+                  <div className="flex items-baseline gap-3 flex-wrap">
+                     <p className="text-4xl sm:text-5xl font-display font-black text-white italic tracking-tighter">
+                        {acc.balance.toLocaleString('en-US', { style: 'currency', currency: currency })}
                      </p>
-                     <p className={cn(
-                       "text-[10px] font-black flex items-center gap-1",
-                       acc.trend.startsWith('+') ? 'text-green-500' : 'text-red-500'
-                     )}>
-                        {acc.trend} <TrendingUp size={10} />
+                     <p className="text-[10px] font-black flex items-center gap-1.5 text-emerald-500 bg-emerald-500/5 px-2 py-0.5 rounded-full border border-emerald-500/10 italic">
+                        +0.00% <Activity size={10} strokeWidth={3} />
                      </p>
                   </div>
                </div>
 
-               <div className="pt-8 border-t border-app-border flex justify-between items-center">
-                  <Link to={`/dashboard/transactions`} className="text-[10px] font-black text-zinc-600 uppercase tracking-widest hover:text-app-text transition-colors flex items-center gap-2">
-                    <History size={14} /> View History
+               <div className="pt-8 border-t border-white/5 flex justify-between items-center">
+                  <Link to={`/dashboard/transactions`} className="text-[10px] font-black text-zinc-500 uppercase tracking-widest hover:text-gold transition-colors flex items-center gap-2 italic">
+                    <History size={14} strokeWidth={3} /> Protocol History
                   </Link>
-                  <Link to="/dashboard/transfer" className="w-10 h-10 bg-app-bg rounded-xl flex items-center justify-center text-zinc-500 hover:text-gold hover:border-gold/50 border border-app-border transition-all shadow-lg">
-                    <ArrowUpRight size={20} />
+                  <Link to="/dashboard/transfer" className="w-12 h-12 bg-black rounded-2xl flex items-center justify-center text-zinc-500 hover:text-gold hover:border-gold/50 border border-white/5 transition-all shadow-lg group/btn overflow-hidden">
+                    <ArrowUpRight size={22} className="group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1 transition-transform" />
                   </Link>
                </div>
             </div>
@@ -126,27 +102,28 @@ export default function Accounts() {
 
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Asset Analytics */}
-        <section className="bg-app-card border border-app-border rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 shadow-2xl">
-           <h3 className="text-xl sm:text-2xl font-display font-black text-app-text italic tracking-tighter mb-10 flex items-center gap-4">
-             <ShieldCheck size={24} className="text-gold sm:size-[28px]" /> Allocation Intelligence
+        <section className="bg-zinc-950 border border-gold/10 rounded-[3rem] p-12 shadow-2xl relative overflow-hidden group">
+           <div className="absolute top-0 right-0 w-64 h-64 bg-gold/5 blur-[100px] pointer-events-none group-hover:bg-gold/10 transition-colors" />
+           <h3 className="text-2xl font-display font-black text-white italic tracking-tighter mb-12 flex items-center gap-5">
+             <ShieldCheck size={32} className="text-gold" /> ASSET ALLOCATION PROTOCOL
            </h3>
-           <div className="space-y-8">
+           <div className="space-y-10">
               {[
-                { label: 'Fiat Reserves', val: 85, color: 'bg-gold' },
-                { label: 'Digital Assets', val: 10, color: 'bg-zinc-600' },
-                { label: 'Pending Liquidity', val: 5, color: 'bg-zinc-800' }
+                { label: 'FIAT RESERVES (USD/EUR)', val: 92, color: 'bg-gold' },
+                { label: 'SOVEREIGN EQUITY', val: 5, color: 'bg-zinc-700' },
+                { label: 'TRANSITIONAL LIQUIDITY', val: 3, color: 'bg-zinc-900' }
               ].map((item, i) => (
-                <div key={i} className="space-y-3">
+                <div key={i} className="space-y-4">
                    <div className="flex justify-between items-end">
-                      <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{item.label}</p>
-                      <p className="text-xs font-black text-app-text">{item.val}%</p>
+                      <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em] italic">{item.label}</p>
+                      <p className="text-xs font-black text-white italic tracking-tighter">{item.val}%</p>
                    </div>
-                   <div className="w-full h-2 bg-app-bg border border-app-border rounded-full overflow-hidden">
+                   <div className="w-full h-2.5 bg-black border border-white/5 rounded-full overflow-hidden p-0.5">
                       <motion.div 
                         initial={{ width: 0 }}
                         animate={{ width: `${item.val}%` }}
-                        transition={{ delay: 0.5 + (i * 0.2), duration: 1 }}
-                        className={cn("h-full rounded-full shadow-[0_0_10px_rgba(212,175,55,0.3)]", item.color)} 
+                        transition={{ delay: 0.5 + (i * 0.2), duration: 1.5, ease: "circOut" }}
+                        className={cn("h-full rounded-full shadow-[0_0_20px_rgba(212,175,55,0.4)]", item.color)} 
                       />
                    </div>
                 </div>
@@ -154,25 +131,26 @@ export default function Accounts() {
            </div>
         </section>
 
-        {/* Currency Rates Widget */}
-        <section className="bg-app-card border border-app-border rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 shadow-2xl">
-           <h3 className="text-xl sm:text-2xl font-display font-black text-app-text italic tracking-tighter mb-10 flex items-center gap-4">
-             <Globe size={24} className="text-gold sm:size-[28px]" /> Global Nodes
+        {/* Node Distribution */}
+        <section className="bg-zinc-950 border border-gold/10 rounded-[3rem] p-12 shadow-2xl relative overflow-hidden group">
+           <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 blur-[100px] pointer-events-none" />
+           <h3 className="text-2xl font-display font-black text-white italic tracking-tighter mb-12 flex items-center gap-5">
+             <TrendingUp size={32} className="text-gold" /> GLOBAL NODE STATUS
            </h3>
-           <div className="grid grid-cols-1 xs:grid-cols-2 gap-4 sm:gap-6">
+           <div className="grid grid-cols-2 gap-6">
               {[
-                { pair: 'USD/EUR', rate: 0.92, status: 'Active' },
-                { pair: 'USD/GBP', rate: 0.78, status: 'Active' },
-                { pair: 'EUR/CHF', rate: 0.96, status: 'Active' },
-                { pair: 'GBP/JPY', rate: 191.4, status: 'Active' }
+                { pair: 'USD • EXCHANGE', rate: '1.00', status: 'Optimal' },
+                { pair: 'EUR • CORRIDOR', rate: '0.92', status: 'Online' },
+                { pair: 'GBP • SETTLEMENT', rate: '0.78', status: 'Online' },
+                { pair: 'CHF • PRIVATE', rate: '0.96', status: 'Vault' }
               ].map((node, i) => (
-                <div key={i} className="p-4 sm:p-6 bg-app-bg border border-app-border rounded-2xl hover:border-gold/30 transition-all group shadow-sm">
-                   <p className="text-[9px] sm:text-[10px] text-zinc-600 font-black uppercase tracking-widest mb-1">{node.pair}</p>
+                <div key={i} className="p-6 bg-black border border-white/5 rounded-3xl hover:border-gold/20 transition-all group/node shadow-sm">
+                   <p className="text-[9px] text-zinc-600 font-black uppercase tracking-widest mb-2 italic">{node.pair}</p>
                    <div className="flex justify-between items-end">
-                      <p className="text-lg sm:text-xl font-black text-app-text italic tracking-tighter group-hover:text-gold transition-colors">{node.rate}</p>
-                      <div className="flex items-center gap-1.5 mb-1">
-                         <div className="w-1.5 h-1.5 bg-green-500 rounded-full shadow-[0_0_5px_rgba(34,197,94,0.5)]"></div>
-                         <span className="text-[7px] sm:text-[8px] text-zinc-700 font-black uppercase tracking-widest">{node.status}</span>
+                      <p className="text-2xl font-display font-black text-white italic tracking-tighter group-hover/node:text-gold transition-colors">{node.rate}</p>
+                      <div className="flex items-center gap-2 mb-1.5">
+                         <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse" />
+                         <span className="text-[8px] text-zinc-700 font-black uppercase tracking-widest">{node.status}</span>
                       </div>
                    </div>
                 </div>
@@ -183,3 +161,4 @@ export default function Accounts() {
     </div>
   );
 }
+

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { useState, useEffect, useRef, FormEvent } from 'react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   ArrowDownCircle, 
@@ -22,19 +22,185 @@ import {
   MessageSquare,
   Globe,
   Sun,
-  Moon
+  Moon,
+  Camera,
+  Repeat,
+  FileText,
+  Heart, 
+  Briefcase, 
+  PieChart, 
+  Home, 
+  ChevronRight,
+  CircleDollarSign,
+  Plus,
+  ArrowRight
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn, MOCK_NOTIFICATIONS } from '@/src/lib/utils';
 import { useStore } from '@/src/lib/store';
 
+function SupportChat({ onClose }: { onClose: () => void }) {
+  const [messages, setMessages] = useState([
+    { id: 1, role: 'support', text: 'Greetings, Alexander. You have reached the TrustNova Sovereign Support Protocol. How may we assist with your global asset management today?', time: 'Just now' }
+  ]);
+  const [inputValue, setInputValue] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages, isTyping]);
+
+  const handleSend = (e?: FormEvent) => {
+    e?.preventDefault();
+    if (!inputValue.trim()) return;
+
+    const newMessage = { id: Date.now(), role: 'user', text: inputValue, time: 'Just now' };
+    setMessages([...messages, newMessage]);
+    setInputValue('');
+    setIsTyping(true);
+
+    // Simulate response
+    setTimeout(() => {
+      setIsTyping(false);
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        role: 'support',
+        text: 'Protocol acknowledged. Your inquiry has been routed to our specialized asset technicians. Please remain on the secure line...',
+        time: 'Just now'
+      }]);
+    }, 2000);
+  };
+
+  return (
+    <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-end p-4 sm:p-10 pointer-events-none">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm pointer-events-auto"
+        onClick={onClose}
+      />
+      <motion.div 
+        initial={{ opacity: 0, y: 100, scale: 0.9, x: 20 }}
+        animate={{ opacity: 1, y: 0, scale: 1, x: 0 }}
+        exit={{ opacity: 0, y: 100, scale: 0.9, x: 20 }}
+        className="relative w-full max-w-lg h-[650px] max-h-[85vh] bg-app-card border border-gold/20 rounded-[2.5rem] shadow-[0_50px_100px_rgba(0,0,0,0.8)] flex flex-col overflow-hidden pointer-events-auto"
+      >
+        <div className="p-8 border-b border-app-border bg-black flex items-center justify-between">
+           <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-gold/10 rounded-2xl flex items-center justify-center text-gold border border-gold/20">
+                 <Shield size={24} />
+              </div>
+              <div>
+                 <h3 className="text-xl font-display font-black text-white italic tracking-tighter leading-none">Support Protocol</h3>
+                 <p className="text-[9px] text-zinc-500 font-black uppercase tracking-[0.2em] mt-1">Encrypted Node • Sovereign Auth</p>
+              </div>
+           </div>
+           <button 
+             onClick={onClose}
+             className="w-10 h-10 rounded-xl bg-app-bg border border-app-border flex items-center justify-center text-zinc-600 hover:text-white transition-colors"
+           >
+             <X size={20} />
+           </button>
+        </div>
+
+        <div ref={scrollRef} className="flex-1 p-8 overflow-y-auto no-scrollbar space-y-6">
+           {messages.map(msg => (
+             <div key={msg.id} className={cn("flex gap-4", msg.role === 'user' ? "justify-end" : "")}>
+                {msg.role === 'support' && (
+                  <div className="w-10 h-10 bg-zinc-900 rounded-xl flex items-center justify-center text-gold shrink-0 border border-white/5">
+                     <Globe size={18} />
+                  </div>
+                )}
+                <div className={cn(
+                  "p-5 rounded-2xl max-w-[80%] border shadow-lg transition-all duration-300",
+                  msg.role === 'support' 
+                    ? "bg-zinc-900/50 border-white/5 rounded-tl-none text-zinc-300" 
+                    : "bg-gold text-black border-gold/20 rounded-tr-none shadow-gold/10"
+                )}>
+                   <p className={cn("text-xs leading-relaxed", msg.role === 'user' ? "font-bold italic" : "font-medium")}>
+                     {msg.text}
+                   </p>
+                   <p className={cn(
+                     "text-[8px] font-black uppercase tracking-widest mt-3",
+                     msg.role === 'support' ? "text-gold italic text-left" : "opacity-50 text-right"
+                   )}>
+                     {msg.role === 'support' ? 'Autonomous Assistant' : 'Henry David'} • {msg.time}
+                   </p>
+                </div>
+                {msg.role === 'user' && (
+                  <div className="w-10 h-10 bg-gold rounded-xl flex items-center justify-center text-black shrink-0 font-black text-[10px] italic">
+                     HD
+                  </div>
+                )}
+             </div>
+           ))}
+
+           {isTyping && (
+             <div className="flex gap-4">
+                <div className="w-10 h-10 bg-zinc-900 rounded-xl flex items-center justify-center text-gold shrink-0 border border-white/5">
+                   <ShieldCheck size={18} />
+                </div>
+                <div className="bg-zinc-900 border border-white/10 p-5 rounded-2xl rounded-tl-none max-w-[80%]">
+                   <div className="flex gap-1 mb-1">
+                      <span className="w-1 h-1 bg-gold rounded-full animate-bounce" />
+                      <span className="w-1 h-1 bg-gold rounded-full animate-bounce [animation-delay:0.2s]" />
+                      <span className="w-1 h-1 bg-gold rounded-full animate-bounce [animation-delay:0.4s]" />
+                   </div>
+                   <p className="text-[10px] text-zinc-500 font-bold italic">Operator is responding...</p>
+                </div>
+             </div>
+           )}
+        </div>
+
+        <form onSubmit={handleSend} className="p-8 bg-black/80 border-t border-app-border">
+           <div className="relative flex items-center">
+              <input 
+                type="text" 
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Type protocol inquiry..." 
+                className="w-full bg-zinc-900 border border-white/5 rounded-2xl px-6 py-5 text-xs font-black uppercase tracking-widest text-app-text placeholder:text-zinc-700 focus:border-gold/50 outline-none transition-all pr-16"
+              />
+              <button 
+                type="submit"
+                className="absolute right-3 w-10 h-10 bg-gold rounded-xl flex items-center justify-center text-black shadow-lg shadow-gold/20 hover:scale-105 active:scale-95 transition-all"
+              >
+                 <Send size={18} strokeWidth={3} />
+              </button>
+           </div>
+           <p className="text-center text-[8px] text-zinc-700 font-black uppercase tracking-[0.3em] mt-4">All conversations are secured via End-to-End Node Encryption</p>
+        </form>
+      </motion.div>
+    </div>
+  );
+}
+
 export default function DashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showSupportChat, setShowSupportChat] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
   const location = useLocation();
+
+  const SEARCH_SUGGESTIONS = [
+    { name: 'Wire Transfer', path: '/dashboard/wire' },
+    { name: 'Pay Bills', path: '/dashboard/bills' },
+    { name: 'Profile Settings', path: '/dashboard/profile' },
+    { name: 'Transaction History', path: '/dashboard/transactions' },
+    { name: 'Loan Application', path: '/dashboard/loans' },
+    { name: 'Tax Refund', path: '/dashboard/tax-refund' },
+    { name: 'Charity Donation', path: '/dashboard/charity' },
+    { name: 'Identity Verification', path: '/dashboard/verification' },
+  ].filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
   const theme = useStore(state => state.theme);
   const toggleTheme = useStore(state => state.toggleTheme);
   const fullName = useStore(state => state.fullName);
+  const profilePic = useStore(state => state.profilePic);
 
   useEffect(() => {
     if (theme === 'light') {
@@ -45,77 +211,79 @@ export default function DashboardLayout() {
   }, [theme]);
 
   const navItems = [
-    { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-    { name: 'Accounts', icon: Landmark, path: '/dashboard/accounts' },
+    { name: 'Home', icon: Home, path: '/dashboard' },
     { name: 'Deposit', icon: ArrowDownCircle, path: '/dashboard/deposit' },
-    { name: 'Transfer', icon: Send, path: '/dashboard/transfer' },
-    { name: 'Withdraw', icon: ArrowUpCircle, path: '/dashboard/withdraw' },
-    { name: 'Cards', icon: CreditCard, path: '/dashboard/cards' },
+    { name: 'Wire Transfer', icon: Repeat, path: '/dashboard/wire' },
     { name: 'Transactions', icon: History, path: '/dashboard/transactions' },
-    { name: 'Notifications', icon: Bell, path: '/dashboard/notifications' },
+    { name: 'Charity', icon: Heart, path: '/dashboard/charity' },
+    { name: 'Loans', icon: Briefcase, path: '/dashboard/loans' },
+    { name: 'Pay Bills', icon: CircleDollarSign, path: '/dashboard/bills' },
     { name: 'Verification', icon: ShieldCheck, path: '/dashboard/verification' },
-    { name: 'Security', icon: Shield, path: '/dashboard/security' },
-    { name: 'Settings', icon: Settings, path: '/dashboard/settings' },
-    { name: 'Help Center', icon: HelpCircle, path: '/dashboard/help' },
+    { name: 'Profile', icon: User, path: '/dashboard/profile' },
   ];
 
-  const currentPageName = navItems.find(item => item.path === location.pathname)?.name || 'Command';
+  const bottomNavItems = [
+    { name: 'Home', icon: Home, path: '/dashboard' },
+    { name: 'Deposit', icon: ArrowDownCircle, path: '/dashboard/deposit' },
+    { name: 'Transfers', icon: Repeat, path: '/dashboard/wire' },
+    { name: 'History', icon: History, path: '/dashboard/transactions' },
+    { name: 'Profile', icon: User, path: '/dashboard/profile' },
+  ];
 
   return (
-    <div className="min-h-screen bg-app-bg text-app-text flex overflow-hidden">
-      {/* Mobile Sidebar Overlay */}
-      <AnimatePresence>
-        {isSidebarOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 lg:hidden"
-            onClick={() => setIsSidebarOpen(false)}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Sidebar */}
+    <div className="min-h-screen bg-black text-white flex overflow-hidden font-sans">
+      {/* Sidebar (Desktop) */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 w-64 bg-[var(--sidebar-bg)] border-r border-app-border z-50 transform transition-transform lg:relative lg:translate-x-0 flex flex-col py-8",
-        isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        "hidden lg:flex flex-col w-64 bg-black border-r border-gold/10 z-50 py-8 sticky top-0 h-screen",
       )}>
         <div className="px-8 mb-12 flex items-center gap-3">
-          <div className="w-10 h-10 bg-gold rounded-sm flex items-center justify-center shadow-lg shadow-gold/20">
+          <div className="w-10 h-10 bg-gold rounded-lg flex items-center justify-center shadow-lg shadow-gold/20">
             <Landmark className="w-6 h-6 text-black" strokeWidth={3} />
           </div>
-          <span className="text-xl font-black tracking-tighter text-app-text uppercase italic">TRUSTNOVA</span>
+          <div>
+            <span className="text-xl font-black tracking-tighter text-gold uppercase italic leading-none block">TRUSTNOVA</span>
+            <span className="text-[7px] text-white font-bold tracking-[0.3em] uppercase block mt-1">Sovereign Banking Group</span>
+          </div>
         </div>
 
-        <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto no-scrollbar">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.name}
-              to={item.path}
-              end={item.path === '/dashboard'}
-              className={({ isActive }) => cn(
-                "flex items-center gap-4 px-5 py-4 rounded-xl transition-all duration-300 font-black uppercase text-[10px] tracking-[0.2em]",
-                isActive 
-                  ? "bg-gold text-black shadow-xl shadow-gold/10 italic translate-x-2" 
-                  : "text-zinc-500 hover:text-white hover:bg-zinc-900/50"
-              )}
-              onClick={() => setIsSidebarOpen(false)}
-            >
-              <item.icon size={18} className="shrink-0" strokeWidth={2.5} />
-              <span>{item.name}</span>
-            </NavLink>
-          ))}
+        <nav className="flex-1 px-4 space-y-1 overflow-y-auto no-scrollbar">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.name}
+                to={item.path}
+                end={item.path === '/dashboard'}
+                className={({ isActive }) => cn(
+                  "flex items-center justify-between px-5 py-3.5 rounded-xl transition-all duration-300 group",
+                  isActive 
+                    ? "bg-gold text-black shadow-lg shadow-gold/10 font-black italic" 
+                    : "text-zinc-500 hover:text-gold hover:bg-gold/5 font-bold"
+                )}
+              >
+                {({ isActive }) => (
+                  <>
+                    <div className="flex items-center gap-4">
+                      <item.icon size={18} className="shrink-0" strokeWidth={isActive ? 3 : 2} />
+                      <span className="text-[10px] uppercase tracking-widest">{item.name}</span>
+                    </div>
+                    {!isActive && <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />}
+                  </>
+                )}
+              </NavLink>
+            ))}
         </nav>
 
-        <div className="mt-auto px-6 pt-6 border-t border-zinc-900">
-          <div className="flex items-center space-x-3 mb-8 p-3 bg-app-bg rounded-xl border border-app-border">
-            <div className="w-10 h-10 rounded-lg bg-app-card flex items-center justify-center text-zinc-500 overflow-hidden border border-app-border">
-               <User size={20} strokeWidth={2.5} />
+        <div className="mt-auto px-6 pt-6 border-t border-gold/5">
+          <div className="flex items-center space-x-3 mb-8 p-3 bg-zinc-900/50 rounded-2xl border border-white/5">
+            <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center text-gold border border-gold/20 overflow-hidden">
+               {profilePic ? (
+                 <img src={profilePic} alt="Profile" className="w-full h-full object-cover" />
+               ) : (
+                 <User size={20} strokeWidth={2.5} />
+               )}
             </div>
             <div>
-              <p className="text-xs font-black text-app-text uppercase italic tracking-tighter">{fullName}</p>
-              <p className="text-[9px] text-gold font-black uppercase tracking-widest">Premium Tier</p>
+              <p className="text-[10px] font-black text-white uppercase italic tracking-tighter leading-none">{fullName}</p>
+              <p className="text-[8px] text-gold font-black uppercase tracking-widest mt-1">Verified Member</p>
             </div>
           </div>
           <NavLink
@@ -123,138 +291,220 @@ export default function DashboardLayout() {
             className="flex items-center gap-3 px-3 text-[10px] text-zinc-600 hover:text-red-500 mb-4 transition-colors font-black uppercase tracking-widest italic"
           >
             <LogOut size={16} strokeWidth={2.5} />
-            <span>Logout</span>
+            <span>Logout Protocol</span>
           </NavLink>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto bg-app-bg no-scrollbar relative transition-colors duration-300">
+      <main className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto bg-black no-scrollbar relative">
         <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-gold/5 blur-[200px] pointer-events-none" />
         
         {/* Topbar */}
-        <header className="h-24 bg-app-bg/50 backdrop-blur-xl border-b border-app-border px-8 flex items-center justify-between sticky top-0 z-30">
-          <div className="flex-1 flex items-center gap-6">
-            <button className="lg:hidden p-2 hover:bg-app-card text-gold rounded-xl transition-colors" onClick={() => setIsSidebarOpen(true)}>
-              <Menu size={28} strokeWidth={3} />
-            </button>
-            
-            {/* Search Bar */}
-            <div className="hidden md:flex items-center gap-4 px-6 py-3 bg-app-card border border-app-border rounded-2xl w-full max-w-md group focus-within:border-gold/50 transition-all">
-              <Search size={18} className="text-zinc-700 group-focus-within:text-gold transition-colors" />
-              <input 
-                type="text" 
-                placeholder="Search transactions, accounts, or assets..." 
-                className="bg-transparent border-none outline-none text-xs font-black uppercase tracking-widest text-app-text placeholder:text-zinc-500 w-full"
-              />
+        <header className="h-20 bg-black/80 backdrop-blur-xl border-b border-gold/5 px-6 sm:px-10 flex items-center justify-between sticky top-0 z-30">
+          <div className="flex items-center gap-4 lg:hidden">
+            <div className="w-8 h-8 bg-gold rounded-md flex items-center justify-center">
+              <Landmark size={18} className="text-black" strokeWidth={3} />
             </div>
+            <span className="text-lg font-black text-gold italic tracking-tighter uppercase">TRUSTNOVA</span>
           </div>
 
-          <div className="flex items-center gap-4 sm:gap-6">
-            {/* Intel Display (Messages/Notifications) */}
-            <div className="flex items-center gap-2 pr-6 border-r border-app-border hidden sm:flex">
-              <div className="w-10 h-10 rounded-xl bg-app-card border border-app-border flex items-center justify-center text-zinc-600 hover:text-gold transition-colors cursor-pointer relative group">
-                <MessageSquare size={18} strokeWidth={2.5} />
-                <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-gold rounded-full"></span>
-              </div>
-              <div className="relative">
-                <div className="w-10 h-10 rounded-xl bg-app-card border border-app-border flex items-center justify-center text-zinc-600 hover:text-gold transition-colors cursor-pointer relative group" onClick={() => setShowNotifications(!showNotifications)}>
-                  <Bell size={18} strokeWidth={2.5} />
-                  <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-gold rounded-full animate-pulse"></span>
-                </div>
-                
-                <AnimatePresence>
-                  {showNotifications && (
-                    <>
-                        <motion.div
-                        initial={{ opacity: 0, y: 15, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 15, scale: 0.95 }}
-                        className="absolute right-0 mt-6 w-96 bg-app-card rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-app-border z-50 overflow-hidden"
+          <div className="hidden md:flex items-center gap-4 px-6 py-3 bg-zinc-900/50 border border-white/5 rounded-2xl w-full max-w-lg group focus-within:border-gold/50 transition-all relative overflow-visible shadow-2xl">
+            <Search size={18} className="text-zinc-600 group-focus-within:text-gold" />
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="GLOBAL SEARCH PROTOCOL..." 
+              className="bg-transparent border-none outline-none text-[10px] font-black uppercase tracking-widest text-white placeholder:text-zinc-700 w-full"
+            />
+            {searchQuery && (
+              <div className="absolute top-full left-0 w-full mt-2 bg-zinc-950 border border-white/10 rounded-2xl p-2 shadow-[0_30px_60px_rgba(0,0,0,0.8)] z-50">
+                 {SEARCH_SUGGESTIONS.length > 0 ? (
+                   SEARCH_SUGGESTIONS.map((s, i) => (
+                      <button 
+                        key={i} 
+                        onClick={() => { navigate(s.path); setSearchQuery(''); }}
+                        className="w-full text-left p-4 hover:bg-gold/10 rounded-xl transition-colors flex items-center justify-between group/s"
                       >
-                        <div className="p-6 border-b border-app-border bg-app-bg/50 flex items-center justify-between">
-                          <h4 className="font-black uppercase text-[10px] tracking-[0.3em] text-zinc-400">
-                            Notifications
-                          </h4>
-                          <span 
-                            onClick={() => alert("Notification history cleared.")}
-                            className="text-[9px] text-gold font-black uppercase tracking-widest hover:underline cursor-pointer"
-                          >
-                            Clear All
-                          </span>
-                        </div>
-                        <div className="max-h-[400px] overflow-y-auto no-scrollbar">
-                          {MOCK_NOTIFICATIONS.map(n => (
-                            <div key={n.id} className="flex gap-5 p-5 hover:bg-app-bg/50 transition-colors cursor-pointer group border-b border-app-border/50 last:border-0">
-                              <div className={cn(
-                                "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 border transition-all duration-500",
-                                n.type === 'success' 
-                                  ? 'bg-green-500/5 border-green-500/20 text-green-500 group-hover:bg-green-500 group-hover:text-black' 
-                                  : 'bg-gold/5 border-gold/20 text-gold group-hover:bg-gold group-hover:text-black'
-                              )}>
-                                {n.type === 'success' ? <ShieldCheck size={20} strokeWidth={2.5} /> : <Activity size={20} strokeWidth={2.5} />}
-                              </div>
-                              <div className="flex-1">
-                                <p className="text-xs font-black uppercase tracking-tight text-app-text group-hover:text-gold transition-colors leading-tight">{n.title}</p>
-                                <p className="text-[11px] text-zinc-500 mt-1 font-medium leading-relaxed">{n.message}</p>
-                                <div className="flex items-center gap-2 mt-3 text-[9px] text-zinc-700 font-black uppercase tracking-widest">
-                                  <Shield size={10} />
-                                  <span>Verified • {n.time}</span>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="p-4 bg-app-bg text-center">
-                           <button className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-600 hover:text-gold transition-colors" onClick={() => setShowNotifications(false)}>View All Notifications</button>
-                        </div>
-                      </motion.div>
-                    </>
-                  )}
-                </AnimatePresence>
+                         <span className="text-[10px] font-black text-zinc-500 group-hover/s:text-gold uppercase italic tracking-widest">{s.name}</span>
+                         <ArrowRight size={14} className="text-zinc-800 group-hover/s:text-gold" />
+                      </button>
+                   ))
+                 ) : (
+                   <p className="p-4 text-[9px] font-black text-zinc-800 uppercase italic">No matches found</p>
+                 )}
               </div>
-            </div>
+           )}
+          </div>
 
-            {/* Entity Status */}
-            <div className="flex items-center gap-4">
-              <div className="flex flex-col items-end hidden lg:flex">
-                <div className="flex items-center gap-2">
-                  <Globe size={12} className="text-green-500" />
-                  <span className="text-[10px] font-black uppercase text-app-text italic tracking-tighter">SECURE_NODE_01</span>
-                </div>
-                <span className="text-[8px] text-zinc-600 uppercase font-black tracking-widest">Active Connectivity</span>
-              </div>
+          <div className="flex items-center gap-4">
+             {/* Messages */}
+             <button 
+               onClick={() => setShowSupportChat(true)}
+               className="w-12 h-12 rounded-xl bg-gold/5 border border-gold/10 flex items-center justify-center text-zinc-500 hover:text-gold transition-all relative group"
+             >
+                <MessageSquare size={22} strokeWidth={2.5} />
+                <span className="absolute -top-1 -right-1 w-5 h-5 bg-gold text-black text-[10px] font-black rounded-full border-2 border-black flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">1</span>
+             </button>
 
-              {/* Avatar & Flag */}
-              <div className="flex items-center gap-6 pl-4 border-l border-app-border">
+             {/* Notifications */}
+             <div className="relative">
                 <button 
-                  onClick={toggleTheme}
-                  className="w-10 h-10 bg-app-card border border-app-border rounded-xl flex items-center justify-center text-zinc-600 hover:text-gold transition-colors cursor-pointer"
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="w-12 h-12 rounded-xl bg-gold/5 border border-gold/10 flex items-center justify-center text-zinc-500 hover:text-gold transition-all relative group"
                 >
-                   {theme === 'dark' ? <Moon size={18} /> : <Sun size={18} />}
+                   <Bell size={22} strokeWidth={2.5} />
+                   <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white text-[10px] font-black rounded-full border-2 border-black flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">3</span>
                 </button>
-                
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gold p-0.5 flex items-center justify-center overflow-hidden shadow-lg shadow-gold/20">
-                    <div className="w-full h-full bg-app-card border border-app-border/10 rounded-[10px] flex items-center justify-center text-gold font-black text-xs italic uppercase">
-                      {fullName.split(' ').map(n => n[0]).join('')}
-                    </div>
-                  </div>
-                  <div className="hidden lg:block">
-                    <div className="flex items-center gap-2">
-                       <span className="text-[10px] font-black text-app-text uppercase italic tracking-tighter leading-none">{fullName}</span>
-                    </div>
-                  </div>
+             </div>
+
+             <div className="w-px h-6 bg-gold/10 mx-2 hidden sm:block" />
+
+             <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-gold flex items-center justify-center shadow-lg shadow-gold/10 overflow-hidden">
+                   {profilePic ? (
+                     <img src={profilePic} alt="Profile" className="w-full h-full object-cover" />
+                   ) : (
+                     <span className="text-[10px] font-black text-black italic uppercase">
+                       {fullName.split(' ').map(n => n[0]).join('')}
+                     </span>
+                   )}
                 </div>
-              </div>
-            </div>
+                <div className="hidden sm:block">
+                   <p className="text-[9px] font-black text-white uppercase italic leading-none">{fullName}</p>
+                   <p className="text-[7px] text-zinc-600 font-bold uppercase tracking-widest mt-1">ONLINE_NODE</p>
+                </div>
+             </div>
           </div>
         </header>
-
+ 
         {/* Page Content */}
-        <section className="p-6 lg:p-12 flex-1 relative z-10 overflow-x-hidden bg-app-bg pb-12">
+        <div className="flex-1 pb-24 lg:pb-0">
           <Outlet />
-        </section>
+        </div>
+
+        {/* Bottom Navigation (Mobile) */}
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-20 bg-black/95 backdrop-blur-2xl border-t border-gold/10 flex items-center justify-around px-4 z-[60]">
+          {bottomNavItems.map((item) => (
+            <NavLink
+              key={item.name}
+              to={item.path}
+              end={item.path === '/dashboard'}
+              className={({ isActive }) => cn(
+                "flex flex-col items-center gap-1.5 py-1 transition-all",
+                isActive ? "text-gold" : "text-zinc-600"
+              )}
+            >
+              {({ isActive }) => (
+                <>
+                  <item.icon size={22} strokeWidth={isActive ? 3 : 2} />
+                  <span className={cn(
+                    "text-[7px] font-black uppercase tracking-[0.2em]",
+                    isActive ? "opacity-100" : "opacity-60"
+                  )}>{item.name}</span>
+                </>
+              )}
+            </NavLink>
+          ))}
+        </nav>
+
+        {/* Quick Actions (Floating on mobile) */}
+        <div className="lg:hidden fixed bottom-24 right-6 z-[70]">
+           <button 
+             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+             className="w-16 h-16 bg-gold text-black rounded-2xl flex items-center justify-center shadow-[0_20px_40px_rgba(212,175,55,0.4)] active:scale-95 transition-all"
+           >
+              {isSidebarOpen ? <X size={28} strokeWidth={3} /> : <Plus size={28} strokeWidth={3} />}
+           </button>
+           
+           <AnimatePresence>
+             {isSidebarOpen && (
+               <>
+                 <motion.div 
+                   initial={{ opacity: 0 }}
+                   animate={{ opacity: 1 }}
+                   exit={{ opacity: 0 }}
+                   className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[-1]"
+                   onClick={() => setIsSidebarOpen(false)}
+                 />
+                 <motion.div 
+                   initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                   animate={{ opacity: 1, scale: 1, y: 0 }}
+                   exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                   className="absolute bottom-20 right-0 w-64 bg-zinc-950 border border-gold/20 rounded-[2.5rem] p-4 space-y-2 shadow-[0_50px_100px_rgba(0,0,0,1)]"
+                 >
+                    {[
+                      { name: 'Pay Bills', icon: CircleDollarSign, path: '/dashboard/bills' },
+                      { name: 'Wire Transfer', icon: Repeat, path: '/dashboard/wire' },
+                      { name: 'Charity Protocol', icon: Heart, path: '/dashboard/charity' },
+                      { name: 'Apply for Loan', icon: Briefcase, path: '/dashboard/loans' },
+                      { name: 'Deposit Funds', icon: ArrowDownCircle, path: '/dashboard/deposit' },
+                      { name: 'Verification', icon: ShieldCheck, path: '/dashboard/verification' },
+                    ].map((act, i) => (
+                      <NavLink 
+                        key={i} 
+                        to={act.path}
+                        onClick={() => setIsSidebarOpen(false)}
+                        className="flex items-center gap-4 p-4 rounded-xl hover:bg-gold/10 transition-colors group"
+                      >
+                         <div className="w-10 h-10 bg-zinc-900 rounded-lg flex items-center justify-center text-zinc-500 group-hover:text-gold border border-white/5 transition-colors">
+                            <act.icon size={20} />
+                         </div>
+                         <span className="text-[9px] font-black text-white hover:text-gold uppercase tracking-widest italic">{act.name}</span>
+                      </NavLink>
+                    ))}
+                 </motion.div>
+               </>
+             )}
+           </AnimatePresence>
+        </div>
+
+        {/* Global Notifications Panel */}
+        <AnimatePresence>
+          {showNotifications && (
+            <div className="fixed inset-0 z-[100] pointer-events-none">
+               <div className="absolute inset-0 bg-black/20 pointer-events-auto" onClick={() => setShowNotifications(false)} />
+               <motion.div 
+                 initial={{ opacity: 0, x: 20 }}
+                 animate={{ opacity: 1, x: 0 }}
+                 exit={{ opacity: 0, x: 20 }}
+                 className="absolute top-20 right-4 sm:right-10 w-96 max-w-[calc(100vw-2rem)] bg-zinc-950 border border-gold/20 rounded-[2rem] shadow-[0_50px_100px_rgba(0,0,0,1)] overflow-hidden pointer-events-auto"
+               >
+                 <div className="p-6 bg-black border-b border-gold/5 flex items-center justify-between">
+                    <h3 className="text-xs font-black text-gold uppercase tracking-[0.3em]">Protocol Alerts</h3>
+                    <span className="text-[8px] text-zinc-600 font-black uppercase tracking-widest">3 New Packets</span>
+                 </div>
+                 <div className="max-h-[400px] overflow-y-auto no-scrollbar">
+                    {MOCK_NOTIFICATIONS.map(n => (
+                      <div key={n.id} className="p-5 border-b border-white/5 hover:bg-gold/5 transition-colors group">
+                         <div className="flex gap-4">
+                            <div className={cn(
+                              "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border",
+                              n.type === 'success' ? "bg-green-500/10 border-green-500/20 text-green-500" : "bg-gold/10 border-gold/20 text-gold"
+                            )}>
+                               <Shield size={18} />
+                            </div>
+                            <div>
+                               <p className="text-[10px] font-black text-white uppercase tracking-tight leading-tight">{n.title}</p>
+                               <p className="text-[9px] text-zinc-500 mt-1 leading-relaxed font-medium">{n.message}</p>
+                               <p className="text-[7px] text-zinc-700 mt-2 font-black uppercase tracking-widest">{n.time}</p>
+                            </div>
+                         </div>
+                      </div>
+                    ))}
+                 </div>
+               </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Support Chat */}
+        <AnimatePresence>
+          {showSupportChat && (
+            <SupportChat onClose={() => setShowSupportChat(false)} />
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );

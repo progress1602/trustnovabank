@@ -3,79 +3,156 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   ArrowUpCircle, 
   Landmark, 
-  CreditCard, 
   Bitcoin, 
   ShieldCheck, 
-  AlertCircle,
-  Plus,
-  ChevronRight,
-  TrendingUp,
-  Clock,
-  ArrowRight,
-  ArrowUpRight,
-  Send
+  ChevronRight, 
+  Clock, 
+  ArrowRight, 
+  ArrowLeft,
+  Smartphone,
+  CheckCircle2,
+  AlertTriangle,
+  DollarSign,
+  Activity
 } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { useStore } from '@/src/lib/store';
 import { useNavigate } from 'react-router-dom';
 
-const WITHDRAWAL_METHODS = [
+type WithdrawalMethod = {
+  id: string;
+  name: string;
+  icon: React.ElementType;
+  description: string;
+  category: 'Crypto' | 'Digital Wallets' | 'Local';
+  processingTime: string;
+  requirements: string[];
+};
+
+const WITHDRAWAL_METHODS: WithdrawalMethod[] = [
   {
-    id: 'bank',
-    name: 'Bank Withdrawal',
-    icon: Landmark,
-    description: 'Transfer to your external bank account',
-    time: '2-4 Business Days',
-    limit: 'Up to $100,000 / Day',
+    id: 'btc',
+    name: 'Bitcoin (BTC)',
+    icon: Bitcoin,
+    description: 'Protocol-level decentralized asset exit',
+    category: 'Crypto',
+    processingTime: 'Instant • 10m',
+    requirements: ['Recipient BTC Address']
   },
   {
-    id: 'crypto',
-    name: 'Crypto Withdrawal',
-    icon: Bitcoin,
-    description: 'Fast settlement via BTC/USDT',
-    time: 'Instant',
-    limit: 'Unlimited',
+    id: 'usdt',
+    name: 'Tether (USDT)',
+    icon: (props) => (
+      <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" x2="12" y1="2" y2="22" />
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+      </svg>
+    ),
+    description: 'Global dollar-asset liquidation',
+    category: 'Crypto',
+    processingTime: 'Instant • 5m',
+    requirements: ['ERC20/TRC20 Address']
+  },
+  {
+    id: 'cashapp',
+    name: 'CashApp',
+    icon: Smartphone,
+    description: 'Rapid mobile fiat settlement',
+    category: 'Digital Wallets',
+    processingTime: 'Instant',
+    requirements: ['Cashtag ($)']
+  },
+  {
+    id: 'paypal',
+    name: 'PayPal',
+    icon: Wallet, // Placeholder if no dedicated icon
+    description: 'Standard digital wallet corridor',
+    category: 'Digital Wallets',
+    processingTime: '1-2 Hours',
+    requirements: ['Recipient Email Address']
+  },
+  {
+    id: 'skrill',
+    name: 'Skrill',
+    icon: Smartphone,
+    description: 'Specialized digital banking exit',
+    category: 'Digital Wallets',
+    processingTime: '2-4 Hours',
+    requirements: ['Recipient Email Address']
+  },
+  {
+    id: 'wire',
+    name: 'Bank Wire (ACH/SEPA)',
+    icon: Landmark,
+    description: 'Sovereign institutional settlement',
+    category: 'Local',
+    processingTime: '24-48 Hours',
+    requirements: ['Full Bank Details', 'Routing/IBAN']
   }
 ];
 
+function Wallet(props: any) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" /><path d="M3 5v14a2 2 0 0 0 2 2h16v-5" /><path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+    </svg>
+  );
+}
+
 export default function Withdraw() {
   const [step, setStep] = useState(1);
-  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<WithdrawalMethod | null>(null);
   const [amount, setAmount] = useState('');
-  const [address, setAddress] = useState('');
+  const [receiverInfo, setReceiverInfo] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const { balance, withdraw } = useStore();
   const navigate = useNavigate();
 
-  const handleWithdraw = () => {
-    if (!amount || !selectedMethod) return;
+  const handleWithdrawRequest = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!amount || !selectedMethod || !receiverInfo) return;
     
     if (Number(amount) > balance) {
-      alert("Insufficient funds for this withdrawal.");
+      alert("Insufficient liquidity in your current sovereign node.");
       return;
     }
 
-    const method = WITHDRAWAL_METHODS.find(m => m.id === selectedMethod);
-    withdraw(Number(amount), method?.name || selectedMethod, address);
-    setStep(3);
+    setIsProcessing(true);
+    
+    // Simulate protocol validation
+    setTimeout(() => {
+      withdraw(Number(amount), selectedMethod.name, receiverInfo);
+      setIsProcessing(false);
+      setStep(3);
+    }, 3000);
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-12 animate-in fade-in duration-700">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 border-b border-app-border pb-12">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-display font-black text-app-text italic tracking-tighter">
-            Withdraw <span className="gold-gradient-text">Funds</span>
+    <div className="max-w-5xl mx-auto py-12 px-6 pb-24">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-gold/5 blur-[100px] pointer-events-none" />
+
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10 border-b border-white/5 pb-10 mb-12">
+        <div className="space-y-4">
+           <div className="flex items-center gap-3">
+              <span className="px-3 py-1 bg-gold/10 border border-gold/20 rounded-full text-[8px] font-black uppercase text-gold tracking-[0.3em] italic">
+                 Protocol: Liquidity Exit
+              </span>
+           </div>
+          <h1 className="text-4xl lg:text-6xl font-display font-black text-white italic tracking-tighter leading-none uppercase">
+            WITHDRAW / <span className="text-gold">EXIT</span>
           </h1>
-          <p className="text-zinc-500 font-bold uppercase tracking-[0.3em] text-[10px] mt-2">
-            Move your assets to an external account
+          <p className="text-zinc-600 font-bold uppercase tracking-[0.3em] text-[10px] mt-2 italic">
+            Liquidate assets from your sovereign node to an external protocol.
           </p>
         </div>
-        <div className="flex items-center gap-4 bg-app-card border border-app-border px-6 py-3 rounded-2xl w-full lg:w-auto justify-end">
-           <div className="flex flex-col items-end">
-              <p className="text-[8px] text-zinc-700 font-black uppercase tracking-widest leading-none mb-1">Available Balance</p>
-              <p className="text-base sm:text-lg font-black text-app-text italic tracking-tighter">${balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+        
+        <div className="bg-zinc-950 border border-white/5 p-6 rounded-3xl flex flex-col items-end shadow-2xl relative overflow-hidden group">
+           <div className="absolute top-0 right-0 p-4 text-gold/5 pointer-events-none">
+              <Activity size={40} />
            </div>
+           <p className="text-[9px] text-zinc-700 font-black uppercase tracking-[0.4em] mb-2 italic">Available Liquidity</p>
+           <p className="text-2xl font-display font-black text-white italic tracking-tighter">$ {balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
         </div>
       </div>
 
@@ -86,97 +163,160 @@ export default function Withdraw() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="grid gap-6"
+            className="grid lg:grid-cols-2 gap-6"
           >
-            {WITHDRAWAL_METHODS.map((method) => (
-              <div
-                key={method.id}
+            {WITHDRAWAL_METHODS.map((m) => (
+              <button
+                key={m.id}
                 onClick={() => {
-                  setSelectedMethod(method.id);
+                  setSelectedMethod(m);
                   setStep(2);
                 }}
-                className="bg-app-card border border-app-border rounded-[2rem] p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8 cursor-pointer hover:border-gold/40 hover:bg-app-bg transition-all group shadow-2xl"
+                className="bg-zinc-950 border border-white/5 rounded-[2.5rem] p-8 flex flex-col sm:flex-row items-center justify-between gap-8 transition-all duration-500 hover:border-gold/30 hover:bg-gold/[0.02] text-left group shadow-2xl"
               >
-                <div className="flex items-center gap-4 sm:gap-8">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16 bg-app-bg border border-app-border rounded-2xl flex items-center justify-center text-zinc-500 group-hover:text-gold transition-all shrink-0">
-                    <method.icon size={24} className="sm:size-[32px]" />
+                <div className="flex items-center gap-6">
+                  <div className="w-16 h-16 bg-black border border-white/10 rounded-2xl flex items-center justify-center text-zinc-600 group-hover:text-gold group-hover:border-gold/30 transition-all duration-500">
+                    <m.icon size={32} strokeWidth={2.5} />
                   </div>
                   <div>
-                    <h3 className="text-lg sm:text-xl font-display font-black text-app-text italic tracking-tighter group-hover:text-gold transition-colors">{method.name}</h3>
-                    <p className="text-zinc-500 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mt-1">{method.description}</p>
+                    <h3 className="text-xl font-display font-black text-white italic tracking-tighter uppercase leading-none group-hover:text-gold transition-colors">{m.name}</h3>
+                    <p className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mt-2 italic">{m.description}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-12 w-full md:w-auto border-t md:border-t-0 md:border-l border-app-border pt-8 md:pt-0 md:pl-12">
-                   <div className="hidden sm:block">
-                      <p className="text-[9px] text-zinc-700 font-black uppercase mb-1">Processing Time</p>
-                      <p className="text-xs font-black text-app-text italic tracking-tighter">{method.time}</p>
-                   </div>
-                   <ChevronRight className="text-zinc-800 group-hover:text-gold group-hover:translate-x-1 transition-all" size={24} />
+                <div className="flex flex-col items-end gap-2 border-t sm:border-t-0 sm:border-l border-white/5 pt-6 sm:pt-0 sm:pl-8 w-full sm:w-auto">
+                    <p className="text-[9px] text-zinc-800 font-black uppercase tracking-widest leading-none italic">Latency</p>
+                    <p className="text-xs font-black text-white italic tracking-tighter">{m.processingTime}</p>
                 </div>
-              </div>
+              </button>
             ))}
           </motion.div>
         )}
 
-        {step === 2 && (
+        {step === 2 && selectedMethod && (
           <motion.div
             key="step2"
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            className="bg-app-card border border-app-border rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 max-w-2xl mx-auto shadow-2xl"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="grid lg:grid-cols-[1.2fr_1fr] gap-12 max-w-6xl mx-auto"
           >
-             <div className="space-y-8 sm:space-y-12">
-                <div className="text-center">
-                   <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gold/10 rounded-[2rem] flex items-center justify-center text-gold mx-auto mb-6 sm:mb-8">
-                      <ArrowUpCircle size={28} className="sm:size-[36px]" />
-                   </div>
-                   <h2 className="text-2xl sm:text-3xl font-display font-black text-app-text italic tracking-tighter">Enter Withdrawal Amount</h2>
-                   <p className="text-zinc-500 text-xs font-black uppercase tracking-[0.3em] mt-2">Specify the amount you'd like to transfer</p>
-                </div>
+             <div className="space-y-10">
+                <button 
+                   onClick={() => setStep(1)}
+                   className="flex items-center gap-3 text-zinc-600 hover:text-gold transition-colors font-black text-[10px] uppercase tracking-[0.3em] group italic"
+                >
+                   <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> BACK TO PROTOCOL SELECT
+                </button>
 
-                <div className="space-y-8 sm:space-y-10">
-                   <div className="space-y-4">
-                      <label className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600 ml-1">Amount (USD)</label>
-                      <div className="bg-app-bg border border-app-border rounded-2xl p-4 sm:p-6 flex items-center">
-                         <span className="text-2xl sm:text-4xl font-display font-black text-gold mr-4">$</span>
-                         <input 
-                           type="number" 
-                           value={amount}
-                           onChange={(e) => setAmount(e.target.value)}
-                           placeholder="0.00" 
-                           className="bg-transparent border-none outline-none text-2xl sm:text-4xl font-display font-black text-app-text italic w-full"
-                         />
+                <form onSubmit={handleWithdrawRequest} className="bg-zinc-950 border border-white/5 rounded-[3rem] p-12 shadow-[0_50px_100px_rgba(0,0,0,0.5)] space-y-12 relative overflow-hidden">
+                   <div className="absolute top-0 right-0 p-10 text-gold/5 pointer-events-none">
+                      <selectedMethod.icon size={128} />
+                   </div>
+                   
+                   <div className="flex items-center gap-6 pb-10 border-b border-white/5">
+                      <div className="w-20 h-20 bg-gold text-black rounded-3xl flex items-center justify-center shadow-[0_0_30px_rgba(212,175,55,0.2)]">
+                         <selectedMethod.icon size={40} strokeWidth={3} />
                       </div>
-                      <p className="text-right text-[9px] font-black uppercase text-gold/60 tracking-widest">Max: ${balance.toLocaleString()}</p>
+                      <div>
+                         <h2 className="text-3xl font-display font-black text-white italic tracking-tighter uppercase leading-none">{selectedMethod.name}</h2>
+                         <p className="text-zinc-600 text-[10px] uppercase font-black tracking-widest mt-2">{selectedMethod.processingTime} SETTLEMENT WINDOW</p>
+                      </div>
                    </div>
 
-                   <div className="space-y-4">
-                      <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 ml-1">Recipient Account / Address</label>
-                      <input 
-                        type="text" 
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        placeholder={selectedMethod === 'crypto' ? "Enter Wallet Address..." : "Enter Account Details..."}
-                        className="w-full bg-app-bg border border-app-border px-6 py-5 rounded-2xl text-xs font-black text-app-text italic outline-none focus:border-gold transition-all"
-                      />
+                   <div className="grid gap-12">
+                      <div className="space-y-6">
+                         <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 ml-1 italic leading-none">Liquidation Amount</label>
+                         <div className="bg-black border border-white/5 rounded-[2rem] p-8 flex items-center focus-within:border-gold transition-all duration-500 group">
+                            <DollarSign size={32} className="text-zinc-800 group-focus-within:text-gold transition-all" strokeWidth={3} />
+                            <input 
+                              type="number" required
+                              value={amount}
+                              onChange={(e) => setAmount(e.target.value)}
+                              placeholder="0.00" 
+                              className="bg-transparent border-none outline-none text-5xl font-display font-black text-white italic w-full pl-4 placeholder:text-zinc-900"
+                            />
+                         </div>
+                         <div className="flex justify-between items-center px-4">
+                            <p className="text-[10px] font-black uppercase text-zinc-800 italic">Global Reserve Limit</p>
+                            <p className="text-xs font-black text-gold italic">$ {balance.toLocaleString()}</p>
+                         </div>
+                      </div>
+
+                      <div className="space-y-6">
+                         <label className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 ml-1 italic leading-none">Destination Node Address / Info</label>
+                         <input 
+                           type="text" required
+                           value={receiverInfo}
+                           onChange={(e) => setReceiverInfo(e.target.value)}
+                           placeholder={selectedMethod.requirements[0]}
+                           className="w-full bg-black border border-white/5 px-8 py-7 rounded-2xl text-[11px] font-black uppercase tracking-widest text-zinc-300 outline-none focus:border-gold transition-all italic placeholder:text-zinc-800"
+                         />
+                         <p className="text-[8px] text-zinc-700 font-bold uppercase tracking-[0.2em] italic ml-1">
+                            Ensure destination is {selectedMethod.category}-compatible to prevent permanent asset loss.
+                         </p>
+                      </div>
+                   </div>
+
+                   <button 
+                     type="submit"
+                     disabled={isProcessing || !amount || !receiverInfo}
+                     className={cn(
+                        "w-full py-8 rounded-[2rem] text-[11px] font-black uppercase tracking-[0.5em] italic transition-all duration-500 shadow-2xl flex items-center justify-center gap-4",
+                        isProcessing ? "bg-zinc-800 text-zinc-600 cursor-wait" : "bg-gold text-black shadow-gold/20 hover:scale-[1.01] active:scale-[0.98]"
+                     )}
+                   >
+                     {isProcessing ? (
+                       <>
+                         <div className="w-5 h-5 border-2 border-zinc-600 border-t-gold rounded-full animate-spin" />
+                         VALDIATING PACKETS...
+                       </>
+                     ) : (
+                       <>
+                         INITIALIZE LIQUIDATION <ArrowRight size={22} className="group-hover:translate-x-2 transition-transform" />
+                       </>
+                     )}
+                   </button>
+                </form>
+             </div>
+
+             <div className="space-y-10 lg:sticky lg:top-32">
+                <div className="bg-zinc-950 border border-gold/10 rounded-[3rem] p-12 shadow-2xl relative overflow-hidden group">
+                   <div className="absolute top-0 right-0 w-64 h-64 bg-gold/5 blur-[100px] pointer-events-none group-hover:bg-gold/10 transition-colors" />
+                   <h3 className="text-xl font-display font-black text-white italic tracking-tighter mb-10 flex items-center gap-4">
+                     <ShieldCheck size={28} className="text-gold" /> EXIT PROTOCOL
+                   </h3>
+                   <div className="space-y-6">
+                      <div className="p-6 bg-black border border-white/5 rounded-3xl flex gap-5 group/item transition-all hover:bg-gold/5">
+                         <Clock className="text-gold shrink-0 group-hover:scale-110 transition-transform" size={24} />
+                         <p className="text-[10px] font-bold text-zinc-500 leading-relaxed uppercase tracking-widest italic">
+                            All exits are subject to <span className="text-white font-black italic">Sovereign Validation</span> to prevent illicit node drainage.
+                         </p>
+                      </div>
+                      <div className="p-6 bg-black border border-white/5 rounded-3xl flex gap-5 group/item transition-all hover:bg-gold/5">
+                         <AlertTriangle className="text-amber-500 shrink-0 group-hover:scale-110 transition-transform" size={24} />
+                         <p className="text-[10px] font-bold text-zinc-500 leading-relaxed uppercase tracking-widest italic">
+                            Withdrawals over $50,000 may require enhanced Multi-Sig confirmation from the central node.
+                         </p>
+                      </div>
                    </div>
                 </div>
 
-                   <div className="flex gap-4">
-                   <button 
-                     onClick={() => setStep(1)}
-                     className="flex-1 border border-app-border py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-zinc-600 hover:text-app-text transition-colors"
-                   >
-                     Back
-                   </button>
-                   <button 
-                     onClick={handleWithdraw}
-                     className="sleek-button-gold flex-[2] py-5"
-                   >
-                     Confirm Withdrawal
-                   </button>
+                <div className="bg-zinc-950 border border-white/5 rounded-[3rem] p-12 space-y-8 shadow-2xl">
+                   <div className="space-y-6">
+                      <div className="flex justify-between items-center">
+                         <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-700 italic">Settlement Gas</span>
+                         <span className="text-gold text-[10px] font-black italic tracking-tighter">0.00%</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                         <span className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-700 italic">Protocol Network</span>
+                         <span className="text-white text-[10px] font-black italic tracking-tighter uppercase">{selectedMethod.category}</span>
+                      </div>
+                   </div>
+                   <div className="pt-8 border-t border-white/5 flex flex-col gap-2">
+                        <p className="text-[8px] text-zinc-800 font-black uppercase italic tracking-[0.5em] text-center">Protocol Code</p>
+                        <p className="text-xs font-mono font-black text-emerald-500 text-center tracking-tighter uppercase whitespace-pre">EXIT_AUTH_VALID_{selectedMethod.id.toUpperCase()}</p>
+                   </div>
                 </div>
              </div>
           </motion.div>
@@ -185,30 +325,50 @@ export default function Withdraw() {
         {step === 3 && (
           <motion.div
             key="step3"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="max-w-xl mx-auto text-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="max-w-2xl mx-auto text-center py-20 space-y-12"
           >
-             <div className="bg-app-card border border-app-border rounded-[2rem] sm:rounded-[3rem] p-8 sm:p-16 space-y-10 shadow-22xl">
-                 <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gold rounded-full flex items-center justify-center text-black mx-auto shadow-2xl shadow-gold/20">
-                   <ShieldCheck size={32} className="sm:size-[48px]" strokeWidth={3} />
+             <div className="relative inline-block">
+                <div className="absolute inset-0 bg-emerald-500 blur-[80px] opacity-20 animate-pulse" />
+                <div className="w-32 h-32 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center text-emerald-500 relative z-10 mx-auto group">
+                   <ShieldCheck size={64} className="group-hover:scale-110 transition-transform duration-700" strokeWidth={2.5} />
                 </div>
-                <div>
-                   <h3 className="text-2xl sm:text-3xl font-display font-black text-app-text italic tracking-tighter">Withdrawal Initialized</h3>
-                   <p className="text-zinc-500 font-medium leading-relaxed mt-4 text-xs sm:text-base">
-                      Your withdrawal request has been received and is being processed. You will receive a notification once the transfer is complete.
-                   </p>
-                </div>
-                <div className="p-6 bg-app-bg rounded-2xl border border-app-border flex flex-col gap-2 shadow-inner">
-                   <p className="text-[9px] text-zinc-700 font-black uppercase tracking-widest">Transaction ID</p>
-                   <p className="text-sm font-mono font-black text-gold">#TNX-WD-{Math.floor(Math.random()*1000000)}</p>
-                </div>
+             </div>
+
+             <div className="space-y-6">
+                <h3 className="text-4xl lg:text-6xl font-display font-black text-white italic tracking-tighter uppercase">EXIT <span className="text-emerald-500">INITIALIZED</span></h3>
+                <p className="text-zinc-600 font-bold max-w-lg mx-auto text-[10px] uppercase leading-loose tracking-widest italic">
+                  Your liquidation request of <span className="text-white font-black italic">$ {Number(amount).toLocaleString()}</span> has been authorized. Assets are currently migrating through the global exit coridors.
+                </p>
+             </div>
+
+             <div className="p-8 bg-zinc-950 border border-white/5 rounded-[2rem] flex flex-col gap-3 shadow-inner max-w-sm mx-auto">
+                <p className="text-[9px] text-zinc-800 font-black uppercase tracking-[0.5em] italic">Protocol Signature</p>
+                <p className="text-sm font-mono font-black text-gold uppercase tracking-tighter">#TNX-EXIT-{Math.floor(Math.random()*1000000)}</p>
+             </div>
+
+             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
                 <button 
                   onClick={() => navigate('/dashboard')}
-                  className="w-full bg-zinc-900 text-white py-5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors shadow-lg"
+                  className="bg-gold text-black px-12 py-6 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] italic shadow-2xl hover:scale-105 transition-all w-full sm:w-auto"
                 >
-                   Go to Dashboard
+                   RETURN TO DASHBOARD
                 </button>
+                <button 
+                   onClick={() => navigate('/dashboard/transactions')}
+                   className="bg-zinc-950 text-white border border-white/10 px-12 py-6 rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] italic hover:bg-zinc-900 transition-all w-full sm:w-auto"
+                >
+                   VIEW LEDGER
+                </button>
+             </div>
+
+             <div className="pt-20">
+                <div className="flex items-center gap-4 justify-center text-[7px] text-zinc-900 font-black uppercase tracking-[0.6em] italic">
+                   <div className="w-16 h-px bg-zinc-900" />
+                   TRUSTNOVA SECURE EXIT PROTOCOL
+                   <div className="w-16 h-px bg-zinc-900" />
+                </div>
              </div>
           </motion.div>
         )}
@@ -216,3 +376,4 @@ export default function Withdraw() {
     </div>
   );
 }
+

@@ -2,14 +2,17 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Landmark, ArrowRight, Eye, EyeOff, ShieldCheck, Mail, Lock } from 'lucide-react';
+import { useStore } from '@/src/lib/store';
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const setAuthenticated = useStore(state => state.setAuthenticated);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/dashboard');
+    setAuthenticated(true);
+    navigate('/auth/pin-entry');
   };
 
   return (

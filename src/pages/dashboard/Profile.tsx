@@ -1,171 +1,531 @@
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { User, Shield, Bell, Smartphone, MapPin, Mail, Phone, Camera, Save, Lock, ChevronRight, Fingerprint, Database, Cpu } from 'lucide-react';
-import { DUMMY_USER, cn } from '@/src/lib/utils';
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  User, 
+  Mail, 
+  ShieldCheck, 
+  LogOut,
+  Camera,
+  Edit,
+  Info,
+  Save,
+  Lock,
+  Phone,
+  Briefcase,
+  Globe,
+  MapPin,
+  CheckCircle2,
+  X,
+  Eye,
+  EyeOff,
+  ChevronDown
+} from 'lucide-react';
+import { cn } from '@/src/lib/utils';
+import { useStore } from '@/src/lib/store';
+import { COUNTRIES_DATA } from '@/src/lib/countries';
 
 export default function Profile() {
-  const [success, setSuccess] = useState(false);
+  const { 
+    fullName, firstName, lastName, email, phone, occupation, country, 
+    address, city, state, zip, dob, profilePic, pin, currency, accountType,
+    logout, updateUser 
+  } = useStore();
+  
+  const [isEditing, setIsEditing] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPin, setShowPin] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSuccess(true);
-    setTimeout(() => setSuccess(false), 3000);
+  const [formData, setFormData] = useState({
+    firstName: firstName || '',
+    lastName: lastName || '',
+    email: email || '',
+    phone: phone || '',
+    occupation: occupation || '',
+    country: country || 'United States',
+    password: '••••••••',
+    address: address || '',
+    city: city || '',
+    state: state || '',
+    zip: zip || '',
+    dob: dob || '',
+    pin: pin || '',
+    currency: currency || 'USD',
+    accountType: accountType || 'Savings/Checking'
+  });
+
+  const selectedCountry = COUNTRIES_DATA.find(c => c.name === formData.country) || COUNTRIES_DATA[0];
+
+  const handleCountryChange = (countryName: string) => {
+    const countryObj = COUNTRIES_DATA.find(c => c.name === countryName);
+    if (countryObj) {
+      setFormData({
+        ...formData,
+        country: countryName,
+        currency: countryObj.currency,
+        state: countryObj.states[0] || ''
+      });
+    }
   };
 
+  // Sync with store if it changes externally
+  useEffect(() => {
+    setFormData({
+      firstName: firstName || '',
+      lastName: lastName || '',
+      email: email || '',
+      phone: phone || '',
+      occupation: occupation || '',
+      country: country || 'United States',
+      password: '••••••••',
+      address: address || '',
+      city: city || '',
+      state: state || '',
+      zip: zip || '',
+      dob: dob || '',
+      pin: pin || '',
+      currency: currency || 'USD',
+      accountType: accountType || 'Savings/Checking'
+    });
+  }, [firstName, lastName, email, phone, occupation, country, address, city, state, zip, dob, pin, currency, accountType]);
+
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success'>('idle');
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        updateUser({ profilePic: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSave = () => {
+    setSaveStatus('saving');
+    // Simulate API call and update store
+    setTimeout(() => {
+      updateUser({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        fullName: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        phone: formData.phone,
+        occupation: formData.occupation,
+        country: formData.country,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zip: formData.zip,
+        dob: formData.dob,
+        pin: formData.pin,
+        currency: formData.currency,
+        accountType: formData.accountType
+      });
+      setSaveStatus('success');
+      setIsEditing(false);
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    }, 1200);
+  };
+
+  const inputClasses = "w-full bg-black border border-white/5 rounded-2xl p-4 text-[11px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all disabled:opacity-50 disabled:cursor-not-allowed";
+  const labelClasses = "text-[8px] font-black text-zinc-800 uppercase tracking-[0.3em] ml-2 mb-2 block italic";
+
   return (
-    <div className="max-w-6xl mx-auto space-y-12 pb-20 selection:bg-gold selection:text-black">
-      <div className="flex items-center justify-between">
-         <div className="flex items-center gap-6">
-            <div className="w-16 h-16 bg-zinc-900 border border-zinc-800 text-gold rounded-2xl flex items-center justify-center shadow-2xl transition-transform hover:rotate-3">
-               <User size={32} strokeWidth={2.5} />
-            </div>
-            <div>
-               <h3 className="text-3xl italic gold-gradient-text font-black uppercase tracking-tighter">Identity Core</h3>
-               <p className="text-zinc-600 text-[10px] font-black uppercase tracking-[0.4em] mt-2 italic">Manage global credentials & high-level security hardening</p>
-            </div>
-         </div>
-         {success && (
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-green-500/10 border border-green-500/20 text-green-500 px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-3 shadow-[0_0_20px_rgba(34,197,94,0.1)]"
+    <div className="max-w-6xl mx-auto py-8 lg:py-16 px-4 sm:px-8 space-y-12 pb-32 text-white">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="text-center md:text-left space-y-2">
+           <h1 className="text-4xl lg:text-7xl font-display font-black text-white italic tracking-tighter leading-none uppercase">
+            SOVEREIGN <span className="text-gold">ID</span>
+          </h1>
+          <p className="text-zinc-600 font-bold uppercase tracking-[0.4em] text-[9px] italic">
+            Authorized Identity Node Configuration • v4.2L
+          </p>
+        </div>
+        
+        <div className="flex gap-4">
+          {!isEditing ? (
+            <button 
+              onClick={() => setIsEditing(true)}
+              className="px-8 py-4 bg-zinc-950 border border-gold/20 text-gold rounded-2xl text-[10px] font-black uppercase tracking-widest italic hover:bg-gold hover:text-black transition-all shadow-2xl flex items-center gap-2"
             >
-              <Shield size={14} strokeWidth={3} /> Changes Synchronized
-            </motion.div>
-         )}
+              <Edit size={16} strokeWidth={3} /> Edit Profile
+            </button>
+          ) : (
+            <div className="flex gap-2">
+               <button 
+                onClick={() => setIsEditing(false)}
+                className="px-6 py-4 bg-zinc-900 text-zinc-500 rounded-2xl text-[10px] font-black uppercase tracking-widest italic hover:text-white transition-all"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleSave}
+                disabled={saveStatus === 'saving'}
+                className="px-8 py-4 bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest italic hover:scale-105 transition-all shadow-2xl flex items-center gap-2 disabled:opacity-50"
+              >
+                {saveStatus === 'saving' ? 'Saving...' : <><Save size={16} strokeWidth={3} /> Save Changes</>}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="grid lg:grid-cols-7 gap-12">
-        <div className="lg:col-span-2 space-y-8">
-           <div className="sleek-card p-12 text-center relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 blur-[60px] pointer-events-none group-hover:bg-gold/10 transition-all duration-1000" />
-              <div className="relative inline-block group/avatar mb-8">
-                 <div className="w-32 h-32 bg-black-pure border-2 border-zinc-900 rounded-[2rem] flex items-center justify-center overflow-hidden group-hover/avatar:border-gold transition-all duration-500 shadow-2xl relative z-10">
-                    <User size={64} className="text-zinc-800 group-hover/avatar:text-gold transition-colors duration-500" strokeWidth={1} />
-                    <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover/avatar:opacity-100 transition-opacity" />
+      <div className="grid lg:grid-cols-[1fr_2fr] gap-10 items-start">
+        {/* Left Col: Avatar & Status */}
+        <div className="space-y-8">
+           <div className="bg-zinc-950 border border-white/5 rounded-[3rem] sm:rounded-[4rem] p-6 sm:p-10 flex flex-col items-center text-center space-y-8 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-8 text-gold/5 pointer-events-none">
+                <User size={120} />
+              </div>
+              
+              <div className="relative group mx-auto">
+                 <div className="absolute inset-0 bg-gold blur-[60px] opacity-10" />
+                 <div className="w-40 h-40 sm:w-48 sm:h-48 bg-black border-4 border-white/10 rounded-[2.5rem] sm:rounded-[3.5rem] flex items-center justify-center text-zinc-900 relative z-10 overflow-hidden transition-all duration-700">
+                   {profilePic ? (
+                     <img src={profilePic} alt="Profile" className="w-full h-full object-cover" />
+                   ) : (
+                     <User size={80} strokeWidth={1} />
+                   )}
+                   <div 
+                     onClick={() => fileInputRef.current?.click()}
+                     className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer gap-2"
+                   >
+                      <Camera size={28} className="text-gold" />
+                      <span className="text-[7px] font-black uppercase tracking-widest text-white">Update Photo</span>
+                   </div>
                  </div>
-                 <button className="absolute -bottom-2 -right-2 w-12 h-12 bg-gold text-black rounded-2xl flex items-center justify-center shadow-2xl hover:scale-110 transition-all border-4 border-black-pure relative z-20">
-                    <Camera size={20} strokeWidth={3} />
+                 <input 
+                   type="file" 
+                   ref={fileInputRef} 
+                   className="hidden" 
+                   accept="image/*" 
+                   onChange={handleImageUpload}
+                 />
+                 <button 
+                   onClick={() => fileInputRef.current?.click()}
+                   className="absolute -bottom-1 -right-1 w-12 h-12 sm:w-14 sm:h-14 bg-gold text-black rounded-xl sm:rounded-2xl flex items-center justify-center shadow-2xl border-[3px] sm:border-4 border-black z-20 hover:scale-110 transition-transform"
+                 >
+                   <Camera size={24} />
                  </button>
               </div>
-              <h4 className="font-black text-xl tracking-tighter text-white uppercase italic mb-2">{DUMMY_USER.fullName}</h4>
-              <p className="text-[10px] text-gold font-black uppercase tracking-[0.4em] mb-8 italic">Supreme Overseer</p>
-              
-              <div className="grid grid-cols-3 gap-3">
-                 <div className="p-4 bg-black-pure border border-zinc-900 rounded-2xl text-zinc-600 hover:text-gold hover:border-gold/30 transition-all cursor-pointer flex items-center justify-center">
-                    <Smartphone size={20} />
+
+              <div className="space-y-3 relative z-10">
+                <h2 className="text-3xl font-display font-black text-white italic tracking-tighter uppercase leading-none">{fullName || 'HENRY DAVID'}</h2>
+                <div className="flex items-center justify-center gap-2">
+                   <ShieldCheck size={14} className="text-emerald-500" />
+                   <p className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.4em] italic">Active Sovereign Node</p>
+                </div>
+              </div>
+
+              <div className="w-full pt-6 border-t border-white/5 space-y-4 relative z-10">
+                 <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-widest italic">
+                    <span className="text-zinc-700">Node Status</span>
+                    <span className="text-emerald-500">Encrypted</span>
                  </div>
-                 <div className="p-4 bg-black-pure border border-zinc-900 rounded-2xl text-zinc-600 hover:text-gold hover:border-gold/30 transition-all cursor-pointer flex items-center justify-center">
-                    <Bell size={20} />
-                 </div>
-                 <div className="p-4 bg-black-pure border border-zinc-900 rounded-2xl text-zinc-600 hover:text-gold hover:border-gold/30 transition-all cursor-pointer flex items-center justify-center">
-                    <MapPin size={20} />
+                 <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-widest italic">
+                    <span className="text-zinc-700">Security Clearance</span>
+                    <span className="text-gold">Level 4</span>
                  </div>
               </div>
            </div>
 
-           <div className="sleek-card p-10 space-y-10 relative overflow-hidden">
-              <div className="absolute -right-20 -bottom-20 w-48 h-48 bg-gold/5 blur-[80px] pointer-events-none" />
-              <h5 className="font-black text-[10px] tracking-[0.4em] uppercase text-zinc-600 border-b border-zinc-900/50 pb-6 italic">CORESYNC METADATA</h5>
-              <div className="space-y-8">
-                 <div className="group">
-                    <label className="block text-[8px] uppercase tracking-[0.4em] text-gold font-black mb-2 opacity-40 group-hover:opacity-100 transition-opacity italic">ENTITY_NODE_ID</label>
-                    <div className="flex items-center gap-3">
-                      <Cpu size={14} className="text-zinc-800" />
-                      <p className="text-xs font-mono font-black tracking-[0.2em] text-white uppercase">#TNX-8820-EX-P</p>
-                    </div>
-                 </div>
-                 <div className="group">
-                    <label className="block text-[8px] uppercase tracking-[0.4em] text-gold font-black mb-2 opacity-40 group-hover:opacity-100 transition-opacity italic">SECURITY_CLEARANCE</label>
-                    <div className="flex items-center gap-3">
-                      <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
-                      <p className="text-[11px] font-black text-green-500 uppercase tracking-widest italic">IRON-CLAD OVERRIDE</p>
-                    </div>
-                 </div>
-                 <div className="group">
-                    <label className="block text-[8px] uppercase tracking-[0.4em] text-gold font-black mb-2 opacity-40 group-hover:opacity-100 transition-opacity italic">LEDGER_DOMAIN</label>
-                    <div className="flex items-center gap-3">
-                      <Database size={14} className="text-zinc-800" />
-                      <p className="text-[11px] font-black uppercase tracking-widest text-zinc-400 italic">GLOBAL SOVEREIGN</p>
-                    </div>
-                 </div>
+           <div className="bg-[#FFFFCC] p-8 border border-amber-200 rounded-[3rem] space-y-4 shadow-xl">
+              <div className="flex items-center gap-4 text-amber-600">
+                 <Info size={24} strokeWidth={2.5} />
+                 <h4 className="text-[11px] font-black uppercase tracking-widest italic leading-none">Security Note</h4>
               </div>
+              <p className="text-[10px] font-bold text-amber-900/80 leading-relaxed uppercase tracking-tight italic">
+                 Identity modifications require a protocol restat. some changes may trigger a manual node audit.
+              </p>
            </div>
         </div>
 
-        <div className="lg:col-span-5 space-y-10">
-           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="sleek-card p-12"
-           >
-              <h4 className="font-black text-[10px] uppercase tracking-[0.5em] mb-12 border-b border-zinc-900/50 pb-6 text-zinc-500 italic">IDENTITY PROTOCOLS</h4>
-              <form onSubmit={handleSave} className="space-y-10">
-                 <div className="grid sm:grid-cols-2 gap-10">
-                    <div className="space-y-4">
-                       <label className="block text-[9px] font-black uppercase tracking-[0.4em] text-zinc-700 ml-1 italic">Legal Alias Sequence</label>
-                       <input type="text" defaultValue={DUMMY_USER.fullName} className="w-full px-8 py-6 bg-black-pure border border-zinc-900 rounded-2xl outline-none focus:border-gold/50 font-black text-sm uppercase transition-all text-white italic" />
-                    </div>
-                    <div className="space-y-4">
-                       <label className="block text-[9px] font-black uppercase tracking-[0.4em] text-zinc-700 ml-1 italic">Primary Grid Uplink</label>
-                       <input type="email" defaultValue={DUMMY_USER.email} className="w-full px-8 py-6 bg-black-pure border border-zinc-900 rounded-2xl outline-none focus:border-gold/50 font-black text-sm transition-all text-white italic" />
-                    </div>
-                    <div className="space-y-4">
-                       <label className="block text-[9px] font-black uppercase tracking-[0.4em] text-zinc-700 ml-1 italic">Secure Comms Corridor</label>
-                       <input type="tel" defaultValue="+1 (555) 0014-990" className="w-full px-8 py-6 bg-black-pure border border-zinc-900 rounded-2xl outline-none focus:border-gold/50 font-black text-sm transition-all text-white italic" />
-                    </div>
-                    <div className="space-y-4">
-                       <label className="block text-[9px] font-black uppercase tracking-[0.4em] text-zinc-700 ml-1 italic">Geopolitical Node</label>
-                       <input type="text" defaultValue="Zurich, Switzerland" className="w-full px-8 py-6 bg-black-pure border border-zinc-900 rounded-2xl outline-none focus:border-gold/50 font-black text-sm uppercase transition-all text-white italic" />
-                    </div>
-                 </div>
-                 <div className="pt-10 border-t border-zinc-900/50 flex justify-end">
-                    <button type="submit" className="sleek-button-gold px-14 py-6 group">
-                       <Save size={20} strokeWidth={3} className="group-hover:scale-125 transition-transform" />
-                       Commit Identity Sequence
-                    </button>
-                 </div>
-              </form>
-           </motion.div>
+        {/* Right Col: Forms */}
+        <div className="bg-zinc-950 border border-white/5 rounded-[4rem] p-8 lg:p-14 shadow-2xl space-y-12">
+           <AnimatePresence mode="wait">
+             {saveStatus === 'success' && (
+               <motion.div 
+                 initial={{ opacity: 0, y: -20 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 exit={{ opacity: 0, scale: 0.95 }}
+                 className="bg-emerald-600/10 border border-emerald-500/20 p-6 rounded-3xl flex items-center gap-6"
+               >
+                  <div className="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-emerald-500/20">
+                     <CheckCircle2 size={24} strokeWidth={3} />
+                  </div>
+                  <div>
+                     <p className="text-[11px] font-black text-white uppercase tracking-widest italic leading-none">Protocol Updated</p>
+                     <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-tight italic mt-1">Global node configuration synchronized successfully.</p>
+                  </div>
+                  <button onClick={() => setSaveStatus('idle')} className="ml-auto text-zinc-700 hover:text-white transition-colors">
+                     <X size={18} />
+                  </button>
+               </motion.div>
+             )}
+           </AnimatePresence>
 
-           <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="sleek-card p-12"
-           >
-              <h4 className="font-black text-[10px] uppercase tracking-[0.5em] mb-12 border-b border-zinc-900/50 pb-6 text-zinc-500 italic">VAULT HARDENING</h4>
-              
-              <div className="grid md:grid-cols-2 gap-6">
-                 <div className="flex items-center justify-between p-8 bg-black-pure border border-zinc-900 rounded-[2rem] group cursor-pointer hover:border-gold/40 transition-all hover:bg-zinc-950/40">
-                    <div className="flex items-center gap-6">
-                       <div className="w-16 h-16 bg-zinc-950 border border-zinc-900 rounded-2xl flex items-center justify-center text-zinc-700 shadow-2xl group-hover:bg-gold group-hover:text-black transition-all group-hover:border-gold">
-                          <Lock size={28} strokeWidth={2.5} />
-                       </div>
-                       <div>
-                          <p className="text-sm font-black uppercase tracking-widest italic group-hover:text-gold transition-colors mb-1">Rotation Strategy</p>
-                          <p className="text-[9px] text-zinc-700 font-black uppercase tracking-[0.2em] italic group-hover:text-zinc-500">Last event: 19 Cycles Ago</p>
-                       </div>
-                    </div>
-                    <ChevronRight size={20} className="text-zinc-800 group-hover:text-gold transition-colors translate-x-0 group-hover:translate-x-2" />
-                 </div>
-
-                 <div className="flex items-center justify-between p-8 bg-black-pure border border-zinc-900 rounded-[2rem] group cursor-pointer hover:border-gold/40 transition-all hover:bg-zinc-950/40">
-                    <div className="flex items-center gap-6">
-                       <div className="w-16 h-16 bg-gold/5 border border-gold/20 text-gold rounded-2xl flex items-center justify-center shadow-2xl group-hover:bg-gold group-hover:text-black transition-all group-hover:border-gold">
-                          <Fingerprint size={28} strokeWidth={2.5} />
-                       </div>
-                       <div>
-                          <p className="text-sm font-black uppercase tracking-widest italic group-hover:text-gold transition-colors mb-1">Neuro-Biometric</p>
-                          <p className="text-[9px] text-green-500/60 font-black uppercase tracking-[0.2em] italic">Active Protection Protocol</p>
-                       </div>
-                    </div>
-                    <div className="w-14 h-7 bg-zinc-900 border border-zinc-800 rounded-full relative p-1 shadow-inner group-hover:border-gold/20">
-                       <div className="absolute right-1 top-1 w-5 h-5 bg-gold rounded-full shadow-[0_0_10px_rgba(212,175,55,0.5)]" />
-                    </div>
-                 </div>
+           {/* Identity Section */}
+           <div className="space-y-8">
+              <div className="flex items-center gap-6">
+                 <div className="h-px bg-gold/10 flex-1" />
+                 <span className="text-[9px] font-black text-zinc-700 uppercase tracking-[0.5em] italic">Core Identity</span>
+                 <div className="h-px bg-gold/10 flex-1" />
               </div>
-           </motion.div>
+
+              <div className="grid sm:grid-cols-2 gap-8">
+                <div className="space-y-2">
+                  <label className={labelClasses}>First Name</label>
+                  <input 
+                    disabled={!isEditing}
+                    value={formData.firstName}
+                    onChange={e => setFormData({...formData, firstName: e.target.value})}
+                    className={inputClasses} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className={labelClasses}>Last Name</label>
+                  <input 
+                    disabled={!isEditing}
+                    value={formData.lastName}
+                    onChange={e => setFormData({...formData, lastName: e.target.value})}
+                    className={inputClasses} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className={labelClasses}>Sovereign Email</label>
+                  <div className="relative group">
+                     <Mail size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-800" />
+                     <input 
+                        disabled={!isEditing}
+                        value={formData.email}
+                        onChange={e => setFormData({...formData, email: e.target.value})}
+                        className={inputClasses} 
+                     />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className={labelClasses}>Phone Protocol</label>
+                  <div className="relative group">
+                     <Phone size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-800" />
+                     <input 
+                        disabled={!isEditing}
+                        value={formData.phone}
+                        onChange={e => setFormData({...formData, phone: e.target.value})}
+                        className={inputClasses} 
+                     />
+                  </div>
+                </div>
+              </div>
+           </div>
+
+           <div className="space-y-8">
+              <div className="flex items-center gap-6">
+                 <div className="h-px bg-gold/10 flex-1" />
+                 <span className="text-[9px] font-black text-zinc-700 uppercase tracking-[0.5em] italic">Fiscal Location</span>
+                 <div className="h-px bg-gold/10 flex-1" />
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-8">
+                <div className="col-span-full space-y-2">
+                  <label className={labelClasses}>Primary Address</label>
+                  <input 
+                    disabled={!isEditing}
+                    value={formData.address}
+                    onChange={e => setFormData({...formData, address: e.target.value})}
+                    className={inputClasses} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className={labelClasses}>Country</label>
+                  <div className="relative group">
+                    <select 
+                      disabled={!isEditing}
+                      value={formData.country}
+                      onChange={e => handleCountryChange(e.target.value)}
+                      className={cn(inputClasses, "appearance-none bg-black")}
+                    >
+                      {COUNTRIES_DATA.map(c => (
+                        <option key={c.code} value={c.name}>{c.name.toUpperCase()}</option>
+                      ))}
+                    </select>
+                    <Globe size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-800" />
+                    <ChevronDown size={14} className="absolute right-10 top-1/2 -translate-y-1/2 text-zinc-800" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className={labelClasses}>State / Province</label>
+                  <div className="relative group">
+                    <select 
+                      disabled={!isEditing}
+                      value={formData.state}
+                      onChange={e => setFormData({...formData, state: e.target.value})}
+                      className={cn(inputClasses, "appearance-none bg-black")}
+                    >
+                      {selectedCountry.states.map(s => (
+                        <option key={s} value={s}>{s.toUpperCase()}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-800" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className={labelClasses}>City</label>
+                  <input 
+                    disabled={!isEditing}
+                    value={formData.city}
+                    onChange={e => setFormData({...formData, city: e.target.value})}
+                    className={inputClasses} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className={labelClasses}>ZIP / Postal Code</label>
+                  <input 
+                    disabled={!isEditing}
+                    value={formData.zip}
+                    onChange={e => setFormData({...formData, zip: e.target.value})}
+                    className={inputClasses} 
+                  />
+                </div>
+                <div className="col-span-full space-y-2">
+                  <label className={labelClasses}>Occupation</label>
+                  <input 
+                    disabled={!isEditing}
+                    value={formData.occupation}
+                    onChange={e => setFormData({...formData, occupation: e.target.value})}
+                    className={inputClasses} 
+                  />
+                </div>
+              </div>
+           </div>
+
+           {/* Secure Area Section */}
+           <div className="space-y-8">
+              <div className="flex items-center gap-6">
+                 <div className="h-px bg-red-900/20 flex-1" />
+                 <span className="text-[9px] font-black text-red-900 uppercase tracking-[0.5em] italic">Secure Credentials</span>
+                 <div className="h-px bg-red-900/20 flex-1" />
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-8">
+                <div className="space-y-2">
+                  <label className={labelClasses}>Access Password</label>
+                  <div className="relative group">
+                     <button 
+                       onClick={() => setShowPassword(!showPassword)}
+                       className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-800 hover:text-gold transition-colors"
+                     >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                     </button>
+                     <input 
+                        type={showPassword ? "text" : "password"}
+                        disabled={!isEditing}
+                        value={formData.password}
+                        onChange={e => setFormData({...formData, password: e.target.value})}
+                        className={inputClasses} 
+                     />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                   <label className={labelClasses}>Date of Birth</label>
+                   <input 
+                      type="date"
+                      disabled={!isEditing}
+                      value={formData.dob}
+                      onChange={e => setFormData({...formData, dob: e.target.value})}
+                      className={inputClasses} 
+                   />
+                </div>
+              </div>
+           </div>
+
+           {/* Interface Preferences */}
+           <div className="space-y-8 pt-6">
+              <div className="flex items-center gap-6">
+                 <div className="h-px bg-gold/10 flex-1" />
+                 <span className="text-[9px] font-black text-zinc-700 uppercase tracking-[0.5em] italic">Interface Preferences</span>
+                 <div className="h-px bg-gold/10 flex-1" />
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-8">
+                <div className="p-6 bg-black border border-white/5 rounded-[2rem] flex items-center justify-between group">
+                   <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-zinc-900 rounded-xl flex items-center justify-center text-zinc-600 transition-colors">
+                         <Globe size={18} />
+                      </div>
+                      <span className="text-[9px] font-black text-white uppercase tracking-widest italic leading-none">Global Currency</span>
+                   </div>
+                   <select 
+                     disabled={!isEditing}
+                     value={formData.currency}
+                     onChange={e => setFormData({...formData, currency: e.target.value})}
+                     className="bg-transparent border-none text-gold text-[10px] font-black outline-none uppercase italic disabled:opacity-50"
+                   >
+                      <option value="USD">USD</option>
+                      <option value="EUR">EUR</option>
+                      <option value="GBP">GBP</option>
+                   </select>
+                </div>
+
+                <div className="p-6 bg-black border border-white/5 rounded-[2rem] flex items-center justify-between group">
+                   <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-zinc-900 rounded-xl flex items-center justify-center text-zinc-600 transition-colors">
+                         <ShieldCheck size={18} />
+                      </div>
+                      <span className="text-[9px] font-black text-white hover:text-gold uppercase tracking-widest italic leading-none">Account Tier</span>
+                   </div>
+                   <select 
+                     disabled={!isEditing}
+                     value={formData.accountType}
+                     onChange={e => setFormData({...formData, accountType: e.target.value})}
+                     className="bg-transparent border-none text-gold text-[10px] font-black outline-none uppercase italic disabled:opacity-50"
+                   >
+                      <option value="Savings/Checking">PREMIUM</option>
+                      <option value="Private Banking">SOVEREIGN</option>
+                      <option value="Corporate">CORPORATE</option>
+                   </select>
+                </div>
+              </div>
+           </div>
+
+           {/* PIN Management */}
+           <div className="space-y-8 pt-6">
+              <div className="flex items-center gap-6">
+                 <div className="h-px bg-gold/10 flex-1" />
+                 <span className="text-[9px] font-black text-zinc-700 uppercase tracking-[0.5em] italic">Access PIN Protocol</span>
+                 <div className="h-px bg-gold/10 flex-1" />
+              </div>
+
+              <div className="space-y-4 max-w-xs mx-auto">
+                <label className="text-[8px] font-black text-zinc-800 uppercase tracking-[0.3em] mb-2 block italic text-center">4-DIGIT SECURITY PIN</label>
+                <div className="relative group/pin">
+                  <input 
+                    type={showPin ? "text" : "password"}
+                    maxLength={4}
+                    disabled={!isEditing}
+                    value={formData.pin}
+                    onChange={e => setFormData({...formData, pin: e.target.value.replace(/\D/g, '')})}
+                    className={cn(inputClasses, "text-center tracking-[1.5em] text-xl pr-14")} 
+                  />
+                  <button 
+                    type="button"
+                    onClick={() => setShowPin(!showPin)}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-zinc-700 hover:text-gold transition-colors"
+                  >
+                    {showPin ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+           </div>
+
+           <button 
+             onClick={logout}
+             className="w-full h-20 bg-red-600/5 hover:bg-red-600/10 border border-red-600/10 rounded-[2.5rem] text-red-600 flex items-center justify-center gap-4 text-[10px] font-black uppercase tracking-[0.4em] italic transition-all group shadow-2xl mt-12 mb-6"
+           >
+             <LogOut size={20} className="group-hover:-translate-x-2 transition-transform" /> Terminate Node Session
+           </button>
         </div>
       </div>
     </div>

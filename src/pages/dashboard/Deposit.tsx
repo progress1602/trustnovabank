@@ -1,139 +1,418 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { ArrowDownCircle, Landmark, Copy, CheckCircle2, ChevronRight, Calculator, ShieldCheck, Upload, Clock } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  ArrowDownCircle, 
+  Copy, 
+  CheckCircle2, 
+  ChevronRight, 
+  ShieldCheck, 
+  Upload, 
+  Clock, 
+  Bitcoin, 
+  Wallet, 
+  Smartphone, 
+  Landmark,
+  ArrowLeft,
+  AlertCircle,
+  FileImage,
+  Activity,
+  ArrowRight
+} from 'lucide-react';
 import { useStore } from '@/src/lib/store';
 import { useNavigate } from 'react-router-dom';
+import { cn } from '@/src/lib/utils';
+
+type DepositMethod = {
+  id: string;
+  name: string;
+  icon: React.ElementType;
+  description: string;
+  category: 'Crypto' | 'Digital Wallets' | 'Local';
+  instructions: {
+    label: string;
+    value: string;
+    copyable?: boolean;
+  }[];
+};
+
+const DEPOSIT_METHODS: DepositMethod[] = [
+  {
+    id: 'btc',
+    name: 'Bitcoin (BTC)',
+    icon: Bitcoin,
+    description: 'Protocol-level decentralized asset transfer',
+    category: 'Crypto',
+    instructions: [
+      { label: 'Network', value: 'BITCOIN' },
+      { label: 'BTC Wallet Address', value: 'bc1qxlzlj3vz...9x9x9x9x9x9', copyable: true },
+      { label: 'Expected Confirmation', value: '2 blocks' }
+    ]
+  },
+  {
+    id: 'eth',
+    name: 'Ethereum (ETH)',
+    icon: Bitcoin, // Using Bitcoin icon as placeholder if needed, but ETH usually has its own
+    description: 'Global smart contract settlement',
+    category: 'Crypto',
+    instructions: [
+      { label: 'Network', value: 'ERC-20' },
+      { label: 'ETH Wallet Address', value: '0x71C765...8x8x8x8x8x8', copyable: true }
+    ]
+  },
+  {
+    id: 'usdt',
+    name: 'Tether (USDT)',
+    icon: DollarSignIcon, // Will use DollarSign
+    description: 'Stable-asset liquidity injection',
+    category: 'Crypto',
+    instructions: [
+      { label: 'Network', value: 'TRC-20 (Preferred)' },
+      { label: 'USDT Address', value: 'TRH882...7y7y7y7y7y7', copyable: true }
+    ]
+  },
+  {
+    id: 'cashapp',
+    name: 'CashApp',
+    icon: Smartphone,
+    description: 'Instant mobile P2P settlement',
+    category: 'Digital Wallets',
+    instructions: [
+      { label: 'Cashtag', value: '$TrustNovaGroup', copyable: true },
+      { label: 'Note Requirement', value: 'Account Initialization' }
+    ]
+  },
+  {
+    id: 'zelle',
+    name: 'Zelle',
+    icon: Smartphone,
+    description: 'Local US P2P protocol',
+    category: 'Local',
+    instructions: [
+      { label: 'Recipient Email', value: 'pay@trustnova.asset', copyable: true },
+      { label: 'Registered Name', value: 'TRUSTNOVA ASSET MGT' }
+    ]
+  },
+  {
+    id: 'wire',
+    name: 'Bank Wire / SEPA',
+    icon: Landmark,
+    description: 'Sovereign-grade institutional transfer',
+    category: 'Local',
+    instructions: [
+      { label: 'Bank Name', value: 'TrustNova Sovereign Bank' },
+      { label: 'IBAN / Route', value: 'GB88 TNXO 7700 1122 3344', copyable: true },
+      { label: 'Reference', value: 'TN-SOVEREIGN-NODE' }
+    ]
+  }
+];
+
+function DollarSignIcon(props: any) {
+  return (
+    <svg 
+      {...props} 
+      xmlns="http://www.w3.org/2000/svg" 
+      width="24" 
+      height="24" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    >
+      <line x1="12" x2="12" y1="2" y2="22" />
+      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+    </svg>
+  );
+}
 
 export default function Deposit() {
+  const [step, setStep] = useState(1);
   const [amount, setAmount] = useState('');
-  const [method, setMethod] = useState('Bank Transfer');
-  const [isRequested, setIsRequested] = useState(false);
+  const [selectedMethod, setSelectedMethod] = useState<DepositMethod | null>(null);
   const [proofFile, setProofFile] = useState<File | null>(null);
+  const [isCopied, setIsCopied] = useState<string | null>(null);
   const deposit = useStore(state => state.deposit);
   const navigate = useNavigate();
 
-  const handleDeposit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!amount || !proofFile) return;
-    deposit(Number(amount), method, 'Pending');
-    setIsRequested(true);
+  const handleCopy = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setIsCopied(id);
+    setTimeout(() => setIsCopied(null), 2000);
   };
 
-  if (isRequested) {
-    return (
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="max-w-xl mx-auto sleek-card p-8 sm:p-16 text-center border-gold/20"
-      >
-        <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gold/10 text-gold border border-gold/20 rounded-2xl flex items-center justify-center mx-auto mb-10 shadow-[0_0_30px_rgba(212,175,55,0.1)]">
-           <Clock size={32} className="sm:size-[48px]" strokeWidth={2.5} />
-        </div>
-        <h2 className="text-3xl sm:text-4xl mb-6 italic text-app-text">Request Pending</h2>
-        <p className="text-zinc-500 mb-12 leading-relaxed uppercase text-xs font-bold tracking-[0.1em]">
-          Your deposit for <span className="text-gold font-black font-mono text-xl">${Number(amount || 0).toLocaleString()}</span> has been submitted. 
-          The admin will review your proof of payment and approve the deposit shortly.
-        </p>
-        <button 
-          onClick={() => navigate('/dashboard')}
-          className="sleek-button-gold w-full py-6"
-        >
-          Check Status in Dashboard
-        </button>
-      </motion.div>
-    );
-  }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!amount || !proofFile || !selectedMethod) return;
+    deposit(Number(amount), selectedMethod.name, 'Pending');
+    setStep(3);
+  };
 
   return (
-    <div className="max-w-3xl mx-auto py-10">
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="sleek-card p-6 sm:p-12"
-      >
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-12 text-center sm:text-left">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-app-bg border border-app-border text-gold rounded-2xl flex items-center justify-center shadow-xl flex-shrink-0">
-            <ArrowDownCircle size={28} className="sm:size-[36px]" strokeWidth={2.5} />
-          </div>
-          <div>
-            <h3 className="text-2xl sm:text-3xl italic gold-gradient-text font-display font-black">Add Funds</h3>
-            <p className="text-zinc-600 text-[10px] font-black uppercase tracking-[0.3em] mt-2 italic">Refill your account balance instantly</p>
-          </div>
-        </div>
+    <div className="max-w-4xl mx-auto py-12 px-6">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-gold/5 blur-[100px] pointer-events-none" />
 
-        <form onSubmit={handleDeposit} className="space-y-10">
-          <div className="group">
-            <label className="block text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 mb-4 group-focus-within:text-gold transition-colors">Amount to Add ($)</label>
-            <div className="relative">
-              <span className="absolute left-6 top-1/2 -translate-y-1/2 text-xl sm:text-2xl font-black text-zinc-700 italic">$</span>
-              <input 
-                type="number" 
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full bg-app-bg border border-app-border rounded-[1.5rem] pl-16 pr-8 py-6 sm:py-8 text-2xl sm:text-3xl font-black focus:outline-none focus:border-gold/50 focus:ring-4 focus:ring-gold/5 transition-all text-app-text italic"
-                placeholder="0.00"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            <div className="group">
-              <label className="block text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 mb-4">Payment Method</label>
-              <select 
-                value={method}
-                onChange={(e) => setMethod(e.target.value)}
-                className="w-full bg-app-bg border border-app-border rounded-2xl px-6 py-6 text-xs font-black uppercase tracking-widest focus:outline-none focus:border-gold/50 transition-all appearance-none cursor-pointer text-app-text"
-              >
-                <option>Bank Transfer</option>
-                <option>Credit / Debit Card</option>
-                <option>Crypto Deposit (BTC/USDT)</option>
-              </select>
-            </div>
-            <div className="group">
-              <label className="block text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 mb-4">Currency</label>
-              <select className="w-full bg-app-bg border border-app-border rounded-2xl px-6 py-6 text-xs font-black uppercase tracking-widest focus:outline-none focus:border-gold/50 transition-all appearance-none cursor-pointer text-app-text">
-                <option>USD - US Dollar</option>
-                <option>EUR - Euro</option>
-                <option>GBP - British Pound</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="p-8 bg-app-bg rounded-2xl border border-dashed border-app-border flex items-center gap-6">
-             <Landmark className="text-zinc-800 shrink-0" size={32} />
-             <p className="text-[11px] leading-snug text-zinc-600 font-bold uppercase tracking-tight italic">
-               Funds will be added to your balance after verification. Processing typically takes <span className="text-zinc-400">few minutes.</span>
-             </p>
-          </div>
-
-          <div className="group">
-            <label className="block text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 mb-4 group-focus-within:text-gold transition-colors">Proof of Payment</label>
-            <div className="relative">
-              <div className="w-full bg-app-bg border-2 border-dashed border-app-border rounded-2xl p-8 flex flex-col items-center justify-center gap-4 hover:border-gold/30 transition-all cursor-pointer relative overflow-hidden">
-                <input 
-                  type="file" 
-                  onChange={(e) => setProofFile(e.target.files?.[0] || null)}
-                  className="absolute inset-0 opacity-0 cursor-pointer"
-                  required
-                />
-                <Upload size={32} className="text-zinc-700" />
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                  {proofFile ? proofFile.name : "Click or Drag proof of payment here"}
-                </p>
-              </div>
-            </div>
-            <p className="text-[9px] text-zinc-700 mt-3 uppercase tracking-widest font-black italic">Supported: JPG, PNG, PDF (Max 5MB)</p>
-          </div>
-
-          <button 
-            type="submit" 
-            className="sleek-button-gold w-full py-8 text-lg"
+      <AnimatePresence mode="wait">
+        {step === 1 && (
+          <motion.div
+            key="step1"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-12"
           >
-            Submit for Approval
-          </button>
-        </form>
-      </motion.div>
+            <div className="text-center sm:text-left space-y-4">
+               <div className="inline-flex items-center gap-3 px-4 py-2 bg-gold/10 border border-gold/20 rounded-full text-[9px] font-black uppercase text-gold tracking-widest italic">
+                  <Activity size={14} /> Node Refill Protocol
+               </div>
+               <h1 className="text-4xl lg:text-6xl font-display font-black text-white italic tracking-tighter leading-none uppercase">
+                  Add <span className="text-gold">Liquidity</span>
+               </h1>
+               <p className="text-zinc-600 font-bold tracking-tight text-xs max-w-lg">Inject fresh assets into your sovereign ecosystem using our global settlement network.</p>
+            </div>
+
+            <div className="grid lg:grid-cols-[1.2fr_1fr] gap-12 items-start">
+               {/* Left: Amount & Category Selector */}
+               <div className="space-y-10">
+                  <div className="bg-zinc-950 border border-white/5 p-10 rounded-[3rem] shadow-2xl relative overflow-hidden group">
+                     <div className="absolute top-0 right-0 p-6 text-gold/10 pointer-events-none">
+                        <DollarSignIcon className="size-32" />
+                     </div>
+                     <label className="block text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 mb-6 italic">Liquidity Amount (USD)</label>
+                     <div className="relative">
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 text-5xl font-display font-black text-zinc-800 italic">$</span>
+                        <input 
+                           type="number"
+                           value={amount}
+                           onChange={e => setAmount(e.target.value)}
+                           className="w-full bg-transparent border-none outline-none text-6xl font-display font-black text-white italic tracking-tighter placeholder:text-zinc-900 pl-10"
+                           placeholder="0.00"
+                        />
+                     </div>
+                  </div>
+
+                  <div className="space-y-4">
+                     <span className="block text-[10px] font-black uppercase tracking-[0.4em] text-zinc-600 ml-4 mb-6">Settlement Protocol</span>
+                     <div className="grid grid-cols-1 gap-4">
+                        {DEPOSIT_METHODS.map((m) => (
+                           <button
+                              key={m.id}
+                              onClick={() => setSelectedMethod(m)}
+                              className={cn(
+                                 "w-full p-6 bg-zinc-950 border rounded-3xl flex items-center justify-between group transition-all duration-500 text-left",
+                                 selectedMethod?.id === m.id ? "border-gold bg-gold/5 shadow-2xl shadow-gold/5" : "border-white/5 hover:border-gold/20"
+                              )}
+                           >
+                              <div className="flex items-center gap-5">
+                                 <div className={cn(
+                                    "w-12 h-12 rounded-2xl flex items-center justify-center border transition-all duration-500",
+                                    selectedMethod?.id === m.id ? "bg-gold text-black border-gold" : "bg-app-bg border-white/5 text-zinc-600"
+                                 )}>
+                                    <m.icon size={24} strokeWidth={2.5} />
+                                 </div>
+                                 <div>
+                                    <h4 className={cn(
+                                       "text-sm font-black uppercase italic tracking-tighter transition-all",
+                                       selectedMethod?.id === m.id ? "text-gold" : "text-zinc-400 group-hover:text-white"
+                                    )}>{m.name}</h4>
+                                    <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest mt-1">{m.description}</p>
+                                 </div>
+                              </div>
+                              <ChevronRight className={cn(
+                                 "text-zinc-800 group-hover:text-gold group-hover:translate-x-1 transition-all",
+                                 selectedMethod?.id === m.id && "text-gold opacity-100"
+                              )} />
+                           </button>
+                        ))}
+                     </div>
+                  </div>
+               </div>
+
+               {/* Right: Info Box */}
+               <div className="space-y-8 lg:sticky lg:top-32">
+                  <div className="bg-gold/5 border border-gold/10 p-10 rounded-[3rem] relative overflow-hidden group">
+                     <div className="absolute -top-10 -right-10 w-40 h-40 bg-gold/10 blur-[80px] group-hover:bg-gold/20 transition-all" />
+                     <ShieldCheck className="text-gold mb-6" size={40} strokeWidth={2.5} />
+                     <h3 className="text-xl font-display font-black text-white italic tracking-tighter mb-4">SECURE SETTLEMENT</h3>
+                     <p className="text-zinc-500 font-bold leading-relaxed text-[11px] uppercase tracking-wider">
+                        All incoming liquidity is verified via node validation. Funds are typically available within 5-15 packets (minutes) after proof submission.
+                     </p>
+                  </div>
+
+                  <button 
+                     disabled={!amount || !selectedMethod}
+                     onClick={() => setStep(2)}
+                     className="w-full bg-gold text-black py-8 rounded-[2rem] text-sm font-black uppercase tracking-[0.4em] italic shadow-[0_20px_50px_rgba(212,175,55,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4 disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed group"
+                  >
+                     GENERATE INSTRUCTIONS <ArrowRight size={22} className="group-hover:translate-x-2 transition-transform" />
+                  </button>
+               </div>
+            </div>
+          </motion.div>
+        )}
+
+        {step === 2 && selectedMethod && (
+          <motion.div
+            key="step2"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-12"
+          >
+            <button 
+               onClick={() => setStep(1)}
+               className="flex items-center gap-3 text-zinc-600 hover:text-gold transition-colors font-black text-[10px] uppercase tracking-[0.3em] group italic"
+            >
+               <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> BACK TO PROTOCOL SELECT
+            </button>
+
+            <div className="grid lg:grid-cols-[1fr_1.2fr] gap-12">
+               {/* Instructions */}
+               <div className="space-y-8">
+                  <div className="bg-zinc-950 border border-gold/10 p-10 rounded-[3rem] shadow-2xl relative overflow-hidden">
+                     <div className="flex items-center gap-5 mb-10">
+                        <div className="w-16 h-16 bg-gold text-black rounded-2xl flex items-center justify-center shadow-[0_0_20px_rgba(212,175,55,0.1)]">
+                           <selectedMethod.icon size={32} strokeWidth={3} />
+                        </div>
+                        <div>
+                           <h2 className="text-3xl font-display font-black text-white italic tracking-tighter leading-none uppercase">{selectedMethod.name}</h2>
+                           <p className="text-zinc-600 text-[10px] uppercase font-black tracking-widest mt-2 italic">Settlement Instructions</p>
+                        </div>
+                     </div>
+
+                     <div className="space-y-8">
+                        {selectedMethod.instructions.map((ins, i) => (
+                           <div key={i} className="space-y-3">
+                              <label className="block text-[8px] font-black uppercase tracking-[0.4em] text-zinc-700 ml-1 italic">{ins.label}</label>
+                              <div className="flex items-center gap-3 group/ins">
+                                 <div className="flex-1 bg-black border border-white/5 rounded-2xl p-5 text-sm font-black text-zinc-300 tracking-tighter break-all">
+                                    {ins.value}
+                                 </div>
+                                 {ins.copyable && (
+                                    <button 
+                                       onClick={() => handleCopy(ins.value, `${i}`)}
+                                       className="w-14 h-14 bg-zinc-900 hover:bg-gold hover:text-black text-zinc-600 rounded-2xl flex items-center justify-center transition-all border border-white/5 shrink-0"
+                                    >
+                                       {isCopied === `${i}` ? <CheckCircle2 size={24} /> : <Copy size={24} />}
+                                    </button>
+                                 )}
+                              </div>
+                           </div>
+                        ))}
+                     </div>
+
+                     <div className="mt-12 p-6 bg-amber-500/5 border border-amber-500/10 rounded-2xl flex items-start gap-4">
+                        <AlertCircle className="text-amber-500 shrink-0" size={20} />
+                        <p className="text-[10px] text-amber-500/80 font-bold italic leading-relaxed uppercase tracking-tight">
+                           Ensure you are sending assets from a verified node. Incorrect network selection will result in permanent loss of sovereign assets.
+                        </p>
+                     </div>
+                  </div>
+               </div>
+
+               {/* Proof Upload */}
+               <form onSubmit={handleSubmit} className="space-y-10 lg:sticky lg:top-32">
+                  <div className="bg-zinc-950 border border-white/5 p-10 rounded-[3rem] shadow-2xl space-y-8">
+                     <div className="text-center space-y-2">
+                        <h3 className="text-xl font-display font-black text-white italic tracking-tighter uppercase">UPLOAD PROOF</h3>
+                        <p className="text-zinc-600 text-[9px] font-bold uppercase tracking-[0.3em]">Mandatory protocol verification</p>
+                     </div>
+
+                     <div className="relative group">
+                        <input 
+                           type="file" required 
+                           onChange={e => setProofFile(e.target.files?.[0] || null)}
+                           className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                        />
+                        <div className={cn(
+                           "h-64 border-2 border-dashed rounded-[2rem] flex flex-col items-center justify-center gap-4 transition-all duration-500",
+                           proofFile ? "bg-emerald-500/5 border-emerald-500/20" : "bg-black border-zinc-900 group-hover:border-gold/30"
+                        )}>
+                           <div className={cn(
+                              "w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500",
+                              proofFile ? "bg-emerald-500 text-black shadow-[0_0_20px_rgba(16,185,129,0.2)]" : "bg-zinc-950 border border-white/5 text-zinc-700"
+                           )}>
+                              {proofFile ? <FileImage size={32} /> : <Upload size={32} />}
+                           </div>
+                           <div className="text-center space-y-2">
+                              <p className={cn(
+                                 "text-[11px] font-black uppercase tracking-widest px-8",
+                                 proofFile ? "text-emerald-500" : "text-zinc-600"
+                              )}>
+                                 {proofFile ? proofFile.name : "DRAG OR CLICK TO UPLOAD PACKET"}
+                              </p>
+                              <p className="text-[8px] text-zinc-800 font-black tracking-widest uppercase">Max Size: 10MB • JPG, PNG, PDF</p>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div className="p-6 bg-zinc-900/50 rounded-2xl border border-white/5 flex items-center gap-4">
+                        <Clock className="text-gold shrink-0" size={20} />
+                        <div>
+                           <p className="text-[9px] text-white font-black uppercase italic leading-none">VERIFICATION TIME</p>
+                           <p className="text-[8px] text-zinc-600 font-bold uppercase mt-1 tracking-widest">Protocol validation usually takes 2-5 minutes.</p>
+                        </div>
+                     </div>
+                  </div>
+
+                  <button 
+                     type="submit" 
+                     className="w-full bg-emerald-500 text-black py-8 rounded-[2rem] text-sm font-black uppercase tracking-[0.4em] italic shadow-[0_20px_50px_rgba(16,185,129,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4 group"
+                  >
+                     SUBMIT FOR SETTLEMENT <CheckCircle2 size={22} className="group-hover:scale-125 transition-transform" />
+                  </button>
+               </form>
+            </div>
+          </motion.div>
+        )}
+
+        {step === 3 && (
+          <motion.div
+            key="step3"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="max-w-2xl mx-auto space-y-12 text-center py-20"
+          >
+            <div className="relative inline-block">
+               <div className="absolute inset-0 bg-gold blur-[60px] opacity-20 animate-pulse" />
+               <div className="w-32 h-32 bg-gold/10 border border-gold/20 rounded-full flex items-center justify-center text-gold relative z-10 mx-auto group">
+                  <Clock size={64} className="group-hover:rotate-12 transition-transform duration-700" strokeWidth={2.5} />
+               </div>
+            </div>
+
+            <div className="space-y-6">
+               <h2 className="text-4xl lg:text-6xl font-display font-black text-white italic tracking-tighter uppercase">PROTOCOL <span className="text-gold">PENDING</span></h2>
+               <p className="text-zinc-600 font-bold max-w-lg mx-auto text-xs uppercase leading-loose tracking-widest">
+                  Your liquidity injection of <span className="text-white font-black italic">$ {Number(amount).toLocaleString()}</span> has been broadcast to the network. Please remain patient while the autonomous technicians verify your proof packet.
+               </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
+               <button 
+                  onClick={() => navigate('/dashboard')}
+                  className="bg-gold text-black px-10 py-6 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] italic shadow-2xl hover:scale-105 transition-all w-full sm:w-auto"
+               >
+                  RETURN TO DASHBOARD
+               </button>
+               <button 
+                  onClick={() => navigate('/dashboard/transactions')}
+                  className="bg-zinc-950 text-white border border-white/10 px-10 py-6 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] italic hover:bg-zinc-900 transition-all w-full sm:w-auto"
+               >
+                  VIEW PACKET LOGS
+               </button>
+            </div>
+
+            <div className="pt-20">
+               <div className="flex items-center gap-4 justify-center text-[8px] text-zinc-800 font-black uppercase tracking-[0.5em] italic">
+                  <div className="w-12 h-px bg-zinc-800" />
+                  TRUSTNOVA SECURE SETTLEMENT
+                  <div className="w-12 h-px bg-zinc-800" />
+               </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+
