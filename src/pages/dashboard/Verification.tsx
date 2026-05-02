@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, ChangeEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   ShieldCheck, 
@@ -9,7 +9,9 @@ import {
   Clock,
   ArrowRight,
   Scan,
-  CreditCard
+  CreditCard,
+  FileText,
+  X
 } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -17,7 +19,30 @@ import { useNavigate } from 'react-router-dom';
 export default function Verification() {
   const [step, setStep] = useState(1);
   const [docType, setDocType] = useState('Passport');
+  const [frontImage, setFrontImage] = useState<string | null>(null);
+  const [backImage, setBackImage] = useState<string | null>(null);
+  const [ssn, setSsn] = useState('');
   const navigate = useNavigate();
+
+  const frontInputRef = useRef<HTMLInputElement>(null);
+  const backInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>, side: 'front' | 'back') => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (side === 'front') setFrontImage(reader.result as string);
+        else setBackImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = (side: 'front' | 'back') => {
+    if (side === 'front') setFrontImage(null);
+    else setBackImage(null);
+  };
 
   return (
     <div className="max-w-4xl mx-auto py-12 px-6 space-y-10 pb-24 text-white">
@@ -58,7 +83,11 @@ export default function Verification() {
               {['Passport', "Driver's License"].map((type) => (
                 <button
                   key={type}
-                  onClick={() => setDocType(type)}
+                  onClick={() => {
+                    setDocType(type);
+                    setFrontImage(null);
+                    setBackImage(null);
+                  }}
                   className={cn(
                     "flex-1 py-6 rounded-2xl text-[10px] font-black uppercase tracking-widest italic transition-all",
                     docType === type ? "bg-gold text-black shadow-lg" : "text-zinc-500 hover:text-white"
@@ -73,29 +102,89 @@ export default function Verification() {
             <div className="grid sm:grid-cols-2 gap-8">
               <div className="space-y-6">
                 <label className="text-[10px] font-black text-zinc-800 uppercase tracking-widest ml-2 italic">Front of {docType} *</label>
-                <div className="aspect-[1.58/1] bg-zinc-950 border-2 border-dashed border-white/10 rounded-[3rem] flex flex-col items-center justify-center gap-4 group cursor-pointer hover:border-gold transition-all relative overflow-hidden">
-                   <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                   <div className="w-16 h-16 bg-black border border-white/5 rounded-2xl flex items-center justify-center text-zinc-800 group-hover:text-gold transition-colors relative z-10">
-                      <Upload size={32} />
-                   </div>
-                   <p className="text-[9px] font-black text-zinc-900 group-hover:text-gold uppercase tracking-widest italic relative z-10">Click or Drag Front Scan</p>
+                <input 
+                  type="file" 
+                  ref={frontInputRef} 
+                  className="hidden" 
+                  accept="image/*"
+                  onChange={(e) => handleFileChange(e, 'front')}
+                />
+                <div 
+                  onClick={() => frontInputRef.current?.click()}
+                  className={cn(
+                    "aspect-[1.58/1] bg-zinc-950 border-2 border-dashed rounded-[3rem] flex flex-col items-center justify-center gap-4 group cursor-pointer transition-all relative overflow-hidden",
+                    frontImage ? "border-gold" : "border-white/10 hover:border-gold"
+                  )}
+                >
+                   {frontImage ? (
+                     <>
+                       <img src={frontImage} alt="Front" className="w-full h-full object-contain p-2" />
+                       <button 
+                        onClick={(e) => { e.stopPropagation(); removeImage('front'); }}
+                        className="absolute top-4 right-4 w-8 h-8 bg-black/80 rounded-full flex items-center justify-center text-red-500 hover:bg-black transition-colors"
+                       >
+                         <X size={16} />
+                       </button>
+                     </>
+                   ) : (
+                     <>
+                       <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                       <div className="w-16 h-16 bg-black border border-white/5 rounded-2xl flex items-center justify-center text-zinc-800 group-hover:text-gold transition-colors relative z-10">
+                          <Upload size={32} />
+                       </div>
+                       <p className="text-[9px] font-black text-zinc-900 group-hover:text-gold uppercase tracking-widest italic relative z-10">Click to Upload Front Scan</p>
+                     </>
+                   )}
                 </div>
               </div>
               <div className="space-y-6">
                 <label className="text-[10px] font-black text-zinc-800 uppercase tracking-widest ml-2 italic">Back of {docType} *</label>
-                <div className="aspect-[1.58/1] bg-zinc-950 border-2 border-dashed border-white/10 rounded-[3rem] flex flex-col items-center justify-center gap-4 group cursor-pointer hover:border-gold transition-all relative overflow-hidden">
-                   <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                   <div className="w-16 h-16 bg-black border border-white/5 rounded-2xl flex items-center justify-center text-zinc-800 group-hover:text-gold transition-colors relative z-10">
-                      <Upload size={32} />
-                   </div>
-                   <p className="text-[9px] font-black text-zinc-900 group-hover:text-gold uppercase tracking-widest italic relative z-10">Click or Drag Back Scan</p>
+                <input 
+                  type="file" 
+                  ref={backInputRef} 
+                  className="hidden" 
+                  accept="image/*"
+                  onChange={(e) => handleFileChange(e, 'back')}
+                />
+                <div 
+                   onClick={() => backInputRef.current?.click()}
+                   className={cn(
+                    "aspect-[1.58/1] bg-zinc-950 border-2 border-dashed rounded-[3rem] flex flex-col items-center justify-center gap-4 group cursor-pointer transition-all relative overflow-hidden",
+                    backImage ? "border-gold" : "border-white/10 hover:border-gold"
+                  )}
+                >
+                   {backImage ? (
+                     <>
+                       <img src={backImage} alt="Back" className="w-full h-full object-contain p-2" />
+                       <button 
+                        onClick={(e) => { e.stopPropagation(); removeImage('back'); }}
+                        className="absolute top-4 right-4 w-8 h-8 bg-black/80 rounded-full flex items-center justify-center text-red-500 hover:bg-black transition-colors"
+                       >
+                         <X size={16} />
+                       </button>
+                     </>
+                   ) : (
+                     <>
+                       <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                       <div className="w-16 h-16 bg-black border border-white/5 rounded-2xl flex items-center justify-center text-zinc-800 group-hover:text-gold transition-colors relative z-10">
+                          <Upload size={32} />
+                       </div>
+                       <p className="text-[9px] font-black text-zinc-900 group-hover:text-gold uppercase tracking-widest italic relative z-10">Click to Upload Back Scan</p>
+                     </>
+                   )}
                 </div>
               </div>
             </div>
 
             <button 
               onClick={() => setStep(2)}
-              className="w-full h-24 bg-zinc-950 border border-white/10 text-white rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.5em] italic hover:bg-gold hover:text-black transition-all flex items-center justify-center gap-4 group"
+              disabled={!frontImage || !backImage}
+              className={cn(
+                "w-full h-24 rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.5em] italic transition-all flex items-center justify-center gap-4 group",
+                frontImage && backImage 
+                  ? "bg-zinc-950 border border-white/10 text-white hover:bg-gold hover:text-black" 
+                  : "bg-zinc-900 border border-white/5 text-zinc-700 cursor-not-allowed opacity-50"
+              )}
             >
               Continue to Step 2 <ChevronRight size={18} className="group-hover:translate-x-1" />
             </button>
@@ -123,6 +212,8 @@ export default function Verification() {
                     <ShieldCheck className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-800 group-focus-within:text-gold transition-colors" size={24} />
                     <input 
                       placeholder="000-00-0000" 
+                      value={ssn}
+                      onChange={(e) => setSsn(e.target.value)}
                       className="w-full bg-black border border-white/10 rounded-2xl p-7 pl-16 text-xl font-display font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all" 
                     />
                   </div>
@@ -138,9 +229,15 @@ export default function Verification() {
 
               <button 
                 onClick={() => setStep(3)}
-                className="w-full h-24 bg-gold text-black rounded-3xl text-[11px] font-black uppercase tracking-[0.5em] italic shadow-[0_20px_50px_rgba(212,175,55,0.25)] hover:scale-105 active:scale-95 transition-all group flex items-center justify-center gap-4"
+                disabled={!ssn}
+                className={cn(
+                  "w-full h-24 rounded-3xl text-[11px] font-black uppercase tracking-[0.5em] italic shadow-[0_20px_50px_rgba(212,175,55,0.25)] transition-all group flex items-center justify-center gap-4",
+                  ssn 
+                    ? "bg-gold text-black hover:scale-105 active:scale-95" 
+                    : "bg-zinc-900 text-zinc-700 cursor-not-allowed"
+                )}
               >
-                Verify Account <ArrowRight size={22} className="group-hover:translate-x-2 transition-transform" />
+                Submit for Approval <ArrowRight size={22} className="group-hover:translate-x-2 transition-transform" />
               </button>
 
               <button 

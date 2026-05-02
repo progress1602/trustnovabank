@@ -23,6 +23,7 @@ import {
 import { cn } from '@/src/lib/utils';
 import { useStore } from '@/src/lib/store';
 import { COUNTRIES_DATA } from '@/src/lib/countries';
+import { CountrySelect, StateSelect } from '@/src/components/ui/CountrySelect';
 
 export default function Profile() {
   const { 
@@ -53,8 +54,6 @@ export default function Profile() {
     currency: currency || 'USD',
     accountType: accountType || 'Savings/Checking'
   });
-
-  const selectedCountry = COUNTRIES_DATA.find(c => c.name === formData.country) || COUNTRIES_DATA[0];
 
   const handleCountryChange = (countryName: string) => {
     const countryObj = COUNTRIES_DATA.find(c => c.name === countryName);
@@ -338,39 +337,19 @@ export default function Profile() {
                     className={inputClasses} 
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className={labelClasses}>Country</label>
-                  <div className="relative group">
-                    <select 
-                      disabled={!isEditing}
-                      value={formData.country}
-                      onChange={e => handleCountryChange(e.target.value)}
-                      className={cn(inputClasses, "appearance-none bg-black")}
-                    >
-                      {COUNTRIES_DATA.map(c => (
-                        <option key={c.code} value={c.name}>{c.name.toUpperCase()}</option>
-                      ))}
-                    </select>
-                    <Globe size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-800" />
-                    <ChevronDown size={14} className="absolute right-10 top-1/2 -translate-y-1/2 text-zinc-800" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className={labelClasses}>State / Province</label>
-                  <div className="relative group">
-                    <select 
-                      disabled={!isEditing}
-                      value={formData.state}
-                      onChange={e => setFormData({...formData, state: e.target.value})}
-                      className={cn(inputClasses, "appearance-none bg-black")}
-                    >
-                      {selectedCountry.states.map(s => (
-                        <option key={s} value={s}>{s.toUpperCase()}</option>
-                      ))}
-                    </select>
-                    <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-800" />
-                  </div>
-                </div>
+                <CountrySelect 
+                  label="Country"
+                  disabled={!isEditing}
+                  value={formData.country}
+                  onChange={handleCountryChange}
+                />
+                <StateSelect 
+                  label="State / Province"
+                  disabled={!isEditing}
+                  country={formData.country}
+                  value={formData.state}
+                  onChange={val => setFormData({...formData, state: val})}
+                />
                 <div className="space-y-2">
                   <label className={labelClasses}>City</label>
                   <input 

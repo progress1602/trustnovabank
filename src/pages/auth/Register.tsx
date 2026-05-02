@@ -5,6 +5,7 @@ import { cn } from '@/src/lib/utils';
 import { Landmark, ArrowRight, ShieldCheck, User, Mail, Lock, Phone, Globe, Briefcase, DollarSign, Wallet, Hash, ChevronDown } from 'lucide-react';
 import { useStore } from '@/src/lib/store';
 import { COUNTRIES_DATA } from '@/src/lib/countries';
+import { CountrySelect, StateSelect } from '@/src/components/ui/CountrySelect';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -24,8 +25,6 @@ export default function Register() {
     currency: 'USD',
     accountType: 'Savings/Checking'
   });
-
-  const selectedCountry = COUNTRIES_DATA.find(c => c.name === formData.country) || COUNTRIES_DATA[0];
 
   const handleCountryChange = (countryName: string) => {
     const countryObj = COUNTRIES_DATA.find(c => c.name === countryName);
@@ -228,40 +227,20 @@ export default function Register() {
                             <Briefcase size={16} className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-800 group-focus-within:text-gold transition-colors" />
                          </div>
                       </div>
-                      <div>
-                         <label className={labelClasses}>Country of Operation</label>
-                         <div className="relative group">
-                            <select 
-                              className={cn(inputClasses, "appearance-none bg-zinc-950")}
-                              value={formData.country}
-                              onChange={e => handleCountryChange(e.target.value)}
-                            >
-                               {COUNTRIES_DATA.map(c => (
-                                  <option key={c.code} value={c.name}>{c.name.toUpperCase()}</option>
-                               ))}
-                            </select>
-                            <Globe size={16} className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-800 transition-colors pointer-events-none" />
-                            <ChevronDown size={14} className="absolute right-12 top-1/2 -translate-y-1/2 text-zinc-800 pointer-events-none" />
-                         </div>
-                      </div>
+                      <CountrySelect 
+                        label="Country of Operation *"
+                        value={formData.country}
+                        onChange={handleCountryChange}
+                      />
                    </div>
 
                    <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-                      <div>
-                         <label className={labelClasses}>State / Province</label>
-                         <div className="relative group">
-                            <select 
-                              className={cn(inputClasses, "appearance-none bg-zinc-950")}
-                              value={formData.state}
-                              onChange={e => setFormData({...formData, state: e.target.value})}
-                            >
-                               {selectedCountry.states.map(s => (
-                                  <option key={s} value={s}>{s.toUpperCase()}</option>
-                               ))}
-                            </select>
-                            <ChevronDown size={14} className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-800 pointer-events-none" />
-                         </div>
-                      </div>
+                      <StateSelect 
+                        label="State / Province *"
+                        country={formData.country}
+                        value={formData.state}
+                        onChange={val => setFormData({...formData, state: val})}
+                      />
                    </div>
                 </div>
 
@@ -277,16 +256,12 @@ export default function Register() {
                       <div>
                          <label className={labelClasses}>Currency Protocol</label>
                          <div className="relative group">
-                            <select 
-                              className={cn(inputClasses, "appearance-none bg-zinc-950")}
-                              value={formData.currency}
-                              onChange={e => setFormData({...formData, currency: e.target.value})}
-                            >
-                               <option value="USD">USD - US DOLLAR</option>
-                               <option value="EUR">EUR - EURO</option>
-                               <option value="GBP">GBP - BRITISH POUND</option>
-                               <option value="CHF">CHF - SWISS FRANC</option>
-                            </select>
+                             <input 
+                               readOnly
+                               tabIndex={-1}
+                               className={cn(inputClasses, "bg-zinc-950/50 cursor-not-allowed opacity-80")}
+                               value={`${formData.currency} - ${COUNTRIES_DATA.find(c => c.currency === formData.currency)?.currencySymbol || ''}`}
+                             />
                             <DollarSign size={16} className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-800 transition-colors pointer-events-none" />
                          </div>
                       </div>
