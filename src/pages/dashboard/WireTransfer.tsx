@@ -17,10 +17,23 @@ import {
 import { cn } from '@/src/lib/utils';
 import { useStore } from '@/src/lib/store';
 import { useNavigate } from 'react-router-dom';
+import { CountrySelect, StateSelect } from '@/src/components/ui/CountrySelect';
+import { COUNTRIES_DATA } from '@/src/lib/countries';
 
 export default function WireTransfer() {
   const { balance } = useStore();
   const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+     type: 'DOMESTIC WIRE',
+     recipient: '',
+     account: '',
+     routing: '',
+     bank: '',
+     amount: '',
+     country: 'United States',
+     state: 'New York'
+  });
 
   return (
     <div className="max-w-4xl mx-auto pb-24 px-4 sm:px-0">
@@ -50,7 +63,11 @@ export default function WireTransfer() {
           <div className="space-y-3 sm:space-y-4">
              <label className="text-[8px] sm:text-[10px] font-black text-zinc-800 uppercase tracking-widest ml-1 sm:ml-2 italic">Transfer Type *</label>
              <div className="relative">
-                <select className="w-full bg-black border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-[10px] sm:text-[11px] font-black text-white uppercase italic tracking-widest outline-none focus:border-orange-500 appearance-none">
+                                 <select 
+                    value={formData.type}
+                    onChange={(e) => setFormData({...formData, type: e.target.value})}
+                    className="w-full bg-black border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-[10px] sm:text-[11px] font-black text-white uppercase italic tracking-widest outline-none focus:border-orange-500 appearance-none"
+                 >
                    <option>DOMESTIC WIRE</option>
                    <option>INTERNATIONAL SWIFT</option>
                    <option>SEPA SETTLEMENT</option>
@@ -61,30 +78,77 @@ export default function WireTransfer() {
 
           <div className="space-y-3 sm:space-y-4">
              <label className="text-[8px] sm:text-[10px] font-black text-zinc-800 uppercase tracking-widest ml-1 sm:ml-2 italic">Recipient Name *</label>
-             <input placeholder="ENTER FULL NAME" className="w-full bg-black border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-[10px] sm:text-[11px] font-black text-white uppercase italic tracking-widest outline-none focus:border-orange-500" />
+             <input 
+               placeholder="ENTER FULL NAME" 
+               value={formData.recipient}
+               onChange={(e) => setFormData({...formData, recipient: e.target.value})}
+               className="w-full bg-black border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-[10px] sm:text-[11px] font-black text-white uppercase italic tracking-widest outline-none focus:border-orange-500" 
+             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3 sm:space-y-4">
                <label className="text-[8px] sm:text-[10px] font-black text-zinc-800 uppercase tracking-widest ml-1 sm:ml-2 italic">Account Number *</label>
-               <input placeholder="IBAN / SEQUENCE" className="w-full bg-black border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-[10px] sm:text-[11px] font-black text-white uppercase italic tracking-widest outline-none focus:border-orange-500" />
+               <input 
+                 placeholder="IBAN / SEQUENCE" 
+                 value={formData.account}
+                 onChange={(e) => setFormData({...formData, account: e.target.value})}
+                 className="w-full bg-black border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-[10px] sm:text-[11px] font-black text-white uppercase italic tracking-widest outline-none focus:border-orange-500" 
+               />
             </div>
             <div className="space-y-3 sm:space-y-4">
                <label className="text-[8px] sm:text-[10px] font-black text-zinc-800 uppercase tracking-widest ml-1 sm:ml-2 italic">Routing / Swift</label>
-               <input placeholder="ROUTING / BIC" className="w-full bg-black border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-[10px] sm:text-[11px] font-black text-white uppercase italic tracking-widest outline-none focus:border-orange-500" />
+               <input 
+                 placeholder="ROUTING / BIC" 
+                 value={formData.routing}
+                 onChange={(e) => setFormData({...formData, routing: e.target.value})}
+                 className="w-full bg-black border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-[10px] sm:text-[11px] font-black text-white uppercase italic tracking-widest outline-none focus:border-orange-500" 
+               />
             </div>
           </div>
 
           <div className="space-y-3 sm:space-y-4">
              <label className="text-[8px] sm:text-[10px] font-black text-zinc-800 uppercase tracking-widest ml-1 sm:ml-2 italic">Bank Institution *</label>
-             <input placeholder="RECIPIENT BANK" className="w-full bg-black border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-[10px] sm:text-[11px] font-black text-white uppercase italic tracking-widest outline-none focus:border-orange-500" />
+             <input 
+               placeholder="RECIPIENT BANK" 
+               value={formData.bank}
+               onChange={(e) => setFormData({...formData, bank: e.target.value})}
+               className="w-full bg-black border border-white/10 rounded-xl sm:rounded-2xl p-4 sm:p-6 text-[10px] sm:text-[11px] font-black text-white uppercase italic tracking-widest outline-none focus:border-orange-500" 
+             />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <CountrySelect 
+               label="Bank Country *"
+               value={formData.country}
+               onChange={(val) => {
+                  const countryObj = COUNTRIES_DATA.find(c => c.name === val);
+                  setFormData({
+                     ...formData,
+                     country: val,
+                     state: countryObj?.states[0] || ''
+                  });
+               }}
+            />
+            <StateSelect 
+               label="Bank State / Province *"
+               country={formData.country}
+               value={formData.state}
+               onChange={(val) => setFormData({...formData, state: val})}
+            />
           </div>
 
           <div className="space-y-3 sm:space-y-4">
              <label className="text-[8px] sm:text-[10px] font-black text-zinc-800 uppercase tracking-widest ml-1 sm:ml-2 italic">Protocol Amount *</label>
              <div className="relative">
                 <span className="absolute left-6 top-1/2 -translate-y-1/2 text-2xl font-black text-orange-500/50 italic">$</span>
-                <input placeholder="0.00" type="number" className="w-full bg-black border border-white/10 rounded-xl sm:rounded-2xl p-6 sm:p-8 pl-12 sm:pl-14 text-2xl sm:text-4xl font-display font-black text-[#FF4D00] uppercase italic tracking-tighter outline-none focus:border-orange-500" />
+                                 <input 
+                   placeholder="0.00" 
+                   type="number" 
+                   value={formData.amount}
+                   onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                   className="w-full bg-black border border-white/10 rounded-xl sm:rounded-2xl p-6 sm:p-8 pl-12 sm:pl-14 text-2xl sm:text-4xl font-display font-black text-[#FF4D00] uppercase italic tracking-tighter outline-none focus:border-orange-500" 
+                 />
              </div>
              <p className="text-[7px] sm:text-[9px] font-bold text-zinc-700 uppercase tracking-widest italic ml-1 sm:ml-2 text-center sm:text-left">Min: $10,000.00 - Max: $1,000,000.00</p>
           </div>

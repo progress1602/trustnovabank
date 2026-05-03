@@ -231,20 +231,20 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(212,175,55,0.05)_0%,_transparent_70%)]" />
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-16 md:mb-20 relative">
-            <h2 className="text-3xl md:text-5xl font-display font-black leading-tight text-white flex flex-col items-center gap-4">
-              Why Choose TrustNova Bank?
+            <h2 className="text-3xl md:text-5xl font-display font-black leading-tight text-white flex flex-col items-center gap-4 text-center">
+              Our Core Banking Features
               <div className="w-16 h-1 bg-gold rounded-full shadow-[0_0_10px_rgba(212,175,55,0.5)]" />
             </h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {[
-              { icon: Zap, title: 'Instant Transfers', desc: 'Send and receive money instantly with zero hassle.' },
-              { icon: Wallet, title: 'Smart Wallet', desc: 'Manage your funds easily with our smart wallet.' },
-              { icon: CreditCard, title: 'Premium Cards', desc: 'Get virtual cards for secure online payments.' },
-              { icon: ShieldCheck, title: 'Top Security', desc: 'Bank-level security to protect your every move.' },
-              { icon: TrendingUp, title: 'Easy Withdrawals', desc: 'Withdraw your money anytime you want.' },
-              { icon: Headphones, title: 'Dedicated Support', desc: 'Our support team is always ready to assist you.' }
+              { icon: Zap, title: 'Instant Transfers', desc: 'Accelerated settlement across global nodes with zero latency.' },
+              { icon: Wallet, title: 'Sovereign Wallet', desc: 'Secure management of diverse asset classes within a unified ledger.' },
+              { icon: CreditCard, title: 'Premium Metal Cards', desc: 'Elite steel cards designed for high-limit international usage.' },
+              { icon: ShieldCheck, title: 'Encrypted Security', desc: 'Multi-layer biometric and protocol-level asset protection.' },
+              { icon: TrendingUp, title: 'Yield Growth', desc: 'Competitive interest models for sustained capital appreciation.' },
+              { icon: Headphones, title: 'Concierge Support', desc: 'High-priority 24/7 access to dedicated banking specialists.' }
             ].map((f, i) => (
               <motion.div 
                 key={i} 
@@ -263,6 +263,82 @@ export default function LandingPage() {
                 </p>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 4.5. ADVANCED ECOSYSTEM SECTION */}
+      <section className="py-24 md:py-32 px-6 bg-[#050505] relative overflow-hidden">
+        <div className="absolute top-1/2 left-0 w-full h-px bg-gradient-to-r from-transparent via-gold/10 to-transparent" />
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid lg:grid-cols-2 gap-16 md:gap-24 items-center">
+            <motion.div {...fadeIn}>
+              <h2 className="text-4xl md:text-6xl font-display font-black text-white leading-tight mb-8">
+                Comprehensive <br /> <span className="text-gold italic">Global Solutions</span>
+              </h2>
+              <p className="text-zinc-400 text-lg mb-12 max-w-lg leading-relaxed">
+                Beyond traditional banking, we offer an integrated ecosystem designed for the modern international citizen.
+              </p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                 {[
+                   { icon: Landmark, title: 'Smart Loans', desc: 'Flexible liquidity solutions with prioritized approval cycles.' },
+                   { icon: Users, title: 'Charity Initatives', desc: 'Direct, transparent impact programs for global social betterment.' },
+                   { icon: Shield, title: 'Bill Settlement', desc: 'Automated cross-border payment protocols for all utility networks.' },
+                   { icon: Fingerprint, title: 'Elite Verification', desc: 'Sovereign identity validation for high-quota transactional access.' }
+                 ].map((item, i) => (
+                   <div key={i} className="space-y-4">
+                      <div className="w-10 h-10 bg-gold rounded-lg flex items-center justify-center text-black">
+                        <item.icon size={20} strokeWidth={2.5} />
+                      </div>
+                      <h4 className="text-sm font-black text-white uppercase tracking-widest">{item.title}</h4>
+                      <p className="text-zinc-500 text-xs font-medium leading-relaxed">{item.desc}</p>
+                   </div>
+                 ))}
+              </div>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="relative p-1 bg-gradient-to-br from-gold/30 via-zinc-900 to-transparent rounded-[3rem] shadow-[0_50px_100px_rgba(0,0,0,0.5)]"
+            >
+              <div className="bg-zinc-950 rounded-[2.9rem] p-8 md:p-12">
+                 <div className="space-y-8">
+                    <div className="flex items-center justify-between pb-8 border-b border-white/5">
+                       <span className="text-xs font-black text-zinc-500 uppercase tracking-[0.3em]">Protocol Monitor</span>
+                       <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    </div>
+                    
+                    <div className="space-y-6">
+                       {[
+                         { label: 'Loan Approval Odds', val: '98.4%', track: 'w-[98%]' },
+                         { label: 'Network Verification Speed', val: '< 2.4s', track: 'w-[92%]' },
+                         { label: 'Global Charity Reach', val: '142 Nodes', track: 'w-[85%]' },
+                         { label: 'Bill Auto-Settlement', val: 'Synchronized', track: 'w-[100%]' }
+                       ].map((stat, i) => (
+                         <div key={i} className="space-y-3">
+                            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                               <span>{stat.label}</span>
+                               <span className="text-gold">{stat.val}</span>
+                            </div>
+                            <div className="h-1 w-full bg-zinc-900 rounded-full overflow-hidden">
+                               <div className={`h-full bg-gold rounded-full ${stat.track} opacity-50`} />
+                            </div>
+                         </div>
+                       ))}
+                    </div>
+
+                    <div className="pt-8 flex justify-center">
+                       <div className="flex items-center gap-2 px-6 py-3 bg-gold/5 border border-gold/20 rounded-xl">
+                          <Activity size={14} className="text-gold" />
+                          <span className="text-[9px] font-black text-gold uppercase tracking-[0.2em]">Live Sovereign Ledger Active</span>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>

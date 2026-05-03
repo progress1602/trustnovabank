@@ -182,10 +182,25 @@ function SupportChat({ onClose }: { onClose: () => void }) {
 export default function DashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showAllNotifications, setShowAllNotifications] = useState(false);
+  const [notificationToDelete, setNotificationToDelete] = useState<number | null>(null);
+  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
   const [showSupportChat, setShowSupportChat] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
+
+  const unreadCount = notifications.length;
+
+  const handleDeleteNotification = (id: number) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+    setNotificationToDelete(null);
+  };
+
+  const handleReadAll = () => {
+    // In a real app we'd mark as read, here we just visual feedback or reset count
+    // For now we'll just keep them but maybe flash a success
+  };
 
   const SEARCH_SUGGESTIONS = [
     { name: 'Wire Transfer', path: '/dashboard/wire' },
@@ -242,7 +257,7 @@ export default function DashboardLayout() {
           </div>
           <div>
             <span className="text-xl font-black tracking-tighter text-gold uppercase italic leading-none block">TRUSTNOVA</span>
-            <span className="text-[7px] text-white font-bold tracking-[0.3em] uppercase block mt-1">Sovereign Banking Group</span>
+            <span className="text-[7px] text-zinc-500 font-bold tracking-[0.2em] uppercase block mt-1">BANKS</span>
           </div>
         </div>
 
@@ -306,7 +321,10 @@ export default function DashboardLayout() {
             <div className="w-8 h-8 bg-gold rounded-md flex items-center justify-center">
               <Landmark size={18} className="text-black" strokeWidth={3} />
             </div>
-            <span className="text-lg font-black text-gold italic tracking-tighter uppercase">TRUSTNOVA</span>
+            <div className="flex flex-col">
+              <span className="text-lg font-black text-gold italic tracking-tighter uppercase leading-none">TRUSTNOVA</span>
+              <span className="text-[6px] text-zinc-500 font-bold uppercase tracking-[0.2em]">BANKS</span>
+            </div>
           </div>
 
           <div className="hidden md:flex items-center gap-4 px-6 py-3 bg-zinc-900/50 border border-white/5 rounded-2xl w-full max-w-lg group focus-within:border-gold/50 transition-all relative overflow-visible shadow-2xl">
@@ -355,7 +373,11 @@ export default function DashboardLayout() {
                   className="w-12 h-12 rounded-xl bg-gold/5 border border-gold/10 flex items-center justify-center text-zinc-500 hover:text-gold transition-all relative group"
                 >
                    <Bell size={22} strokeWidth={2.5} />
-                   <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white text-[10px] font-black rounded-full border-2 border-black flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">3</span>
+                   {unreadCount > 0 && (
+                     <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-600 text-white text-[10px] font-black rounded-full border-2 border-black flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                       {unreadCount > 9 ? '9+' : unreadCount}
+                     </span>
+                   )}
                 </button>
              </div>
 
@@ -466,35 +488,192 @@ export default function DashboardLayout() {
             <div className="fixed inset-0 z-[100] pointer-events-none">
                <div className="absolute inset-0 bg-black/20 pointer-events-auto" onClick={() => setShowNotifications(false)} />
                <motion.div 
-                 initial={{ opacity: 0, x: 20 }}
-                 animate={{ opacity: 1, x: 0 }}
-                 exit={{ opacity: 0, x: 20 }}
+                 initial={{ opacity: 0, x: 20, y: -20, scale: 0.95 }}
+                 animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+                 exit={{ opacity: 0, x: 20, y: -20, scale: 0.95 }}
                  className="absolute top-20 right-4 sm:right-10 w-96 max-w-[calc(100vw-2rem)] bg-zinc-950 border border-gold/20 rounded-[2rem] shadow-[0_50px_100px_rgba(0,0,0,1)] overflow-hidden pointer-events-auto"
                >
                  <div className="p-6 bg-black border-b border-gold/5 flex items-center justify-between">
-                    <h3 className="text-xs font-black text-gold uppercase tracking-[0.3em]">Protocol Alerts</h3>
-                    <span className="text-[8px] text-zinc-600 font-black uppercase tracking-widest">3 New Packets</span>
+                    <div>
+                      <h3 className="text-xs font-black text-gold uppercase tracking-[0.3em]">Protocol Alerts</h3>
+                      <p className="text-[7px] text-zinc-600 font-black uppercase tracking-widest mt-1">Sovereign Node v4.0</p>
+                    </div>
+                    <button 
+                      onClick={handleReadAll}
+                      className="text-[8px] text-zinc-500 hover:text-gold font-black uppercase tracking-widest transition-colors"
+                    >
+                      Read All
+                    </button>
                  </div>
                  <div className="max-h-[400px] overflow-y-auto no-scrollbar">
-                    {MOCK_NOTIFICATIONS.map(n => (
-                      <div key={n.id} className="p-5 border-b border-white/5 hover:bg-gold/5 transition-colors group">
-                         <div className="flex gap-4">
-                            <div className={cn(
-                              "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border",
-                              n.type === 'success' ? "bg-green-500/10 border-green-500/20 text-green-500" : "bg-gold/10 border-gold/20 text-gold"
-                            )}>
-                               <Shield size={18} />
-                            </div>
-                            <div>
-                               <p className="text-[10px] font-black text-white uppercase tracking-tight leading-tight">{n.title}</p>
-                               <p className="text-[9px] text-zinc-500 mt-1 leading-relaxed font-medium">{n.message}</p>
-                               <p className="text-[7px] text-zinc-700 mt-2 font-black uppercase tracking-widest">{n.time}</p>
-                            </div>
-                         </div>
+                    {notifications.length > 0 ? (
+                      notifications.slice(0, 4).map(n => (
+                        <div key={n.id} className="p-5 border-b border-white/5 hover:bg-gold/5 transition-colors group relative">
+                           <div className="flex gap-4">
+                              <div className={cn(
+                                "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border",
+                                n.type === 'success' ? "bg-green-500/10 border-green-500/20 text-green-500" : "bg-gold/10 border-gold/20 text-gold"
+                              )}>
+                                 <Shield size={18} />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                 <p className="text-[10px] font-black text-white uppercase tracking-tight leading-tight truncate pr-8">{n.title}</p>
+                                 <p className="text-[9px] text-zinc-500 mt-1 leading-relaxed font-medium line-clamp-2">{n.message}</p>
+                                 <p className="text-[7px] text-zinc-700 mt-2 font-black uppercase tracking-widest">{n.time}</p>
+                              </div>
+                           </div>
+                           <button 
+                            onClick={(e) => { e.stopPropagation(); setNotificationToDelete(n.id); }}
+                            className="absolute top-5 right-5 p-2 text-zinc-800 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                           >
+                             <X size={14} />
+                           </button>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-10 text-center">
+                        <Bell size={32} className="mx-auto text-zinc-800 mb-4 opacity-20" />
+                        <p className="text-[9px] font-black text-zinc-700 uppercase italic tracking-widest">No active alerts in current node</p>
                       </div>
-                    ))}
+                    )}
                  </div>
+                 {notifications.length > 0 && (
+                   <button 
+                    onClick={() => { setShowAllNotifications(true); setShowNotifications(false); }}
+                    className="w-full p-5 bg-black border-t border-gold/5 text-center text-[9px] font-black text-gold uppercase tracking-[0.4em] italic hover:bg-gold/5 transition-all"
+                   >
+                     View All Protocols
+                   </button>
+                 )}
                </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* View All Notifications Modal */}
+        <AnimatePresence>
+          {showAllNotifications && (
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-10">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black/60 backdrop-blur-md"
+                onClick={() => setShowAllNotifications(false)}
+              />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                className="relative w-full max-w-2xl bg-zinc-950 border border-gold/20 rounded-[3rem] shadow-[0_50px_100px_rgba(0,0,0,1)] flex flex-col overflow-hidden"
+              >
+                <div className="p-8 border-b border-gold/5 bg-black flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-display font-black text-white italic tracking-tighter uppercase">Alert Repository</h2>
+                    <p className="text-[9px] text-gold font-black uppercase tracking-[0.2em] mt-1">Full Transactional History & Protocol Updates</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <button 
+                      onClick={handleReadAll}
+                      className="whitespace-now80 px-6 py-3 bg-gold/5 border border-gold/10 rounded-xl text-[9px] font-black text-gold uppercase tracking-widest hover:bg-gold/10 transition-all"
+                    >
+                      READ ALL
+                    </button>
+                    <button 
+                      onClick={() => setShowAllNotifications(false)}
+                      className="w-12 h-12 rounded-xl bg-zinc-900 border border-white/5 flex items-center justify-center text-zinc-500 hover:text-white transition-colors"
+                    >
+                      <X size={20} />
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-8 space-y-4 max-h-[60vh]">
+                  {notifications.map(n => (
+                    <motion.div 
+                      layout
+                      key={n.id} 
+                      className="p-6 bg-zinc-900/30 border border-white/5 rounded-2xl hover:border-gold/20 transition-all group relative"
+                    >
+                      <div className="flex gap-6">
+                        <div className={cn(
+                          "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border",
+                          n.type === 'success' ? "bg-green-500/10 border-green-500/20 text-green-500" : "bg-gold/10 border-gold/20 text-gold"
+                        )}>
+                          <Shield size={24} />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <h4 className="text-[11px] font-black text-white uppercase tracking-widest">{n.title}</h4>
+                            <span className="text-[8px] text-zinc-600 font-black uppercase tracking-widest">{n.time}</span>
+                          </div>
+                          <p className="text-[10px] text-zinc-400 mt-2 leading-relaxed font-medium">
+                            {n.message}
+                          </p>
+                        </div>
+                        <button 
+                          onClick={() => setNotificationToDelete(n.id)}
+                          className="p-3 bg-red-500/5 hover:bg-red-500/10 rounded-xl text-zinc-700 hover:text-red-500 transition-all group/del shrink-0 self-start"
+                        >
+                          <X size={18} />
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                  {notifications.length === 0 && (
+                    <div className="py-20 text-center opacity-30">
+                      <Bell size={64} className="mx-auto mb-6 text-gold" />
+                      <p className="text-[12px] font-black uppercase tracking-[0.5em] italic">Archive Empty</p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-8 bg-black/50 border-t border-gold/5 flex justify-center">
+                  <p className="text-[8px] text-zinc-700 font-black uppercase tracking-[0.3em]">Protocol Log: Secure Session Active</p>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
+        {/* Delete Confirmation Modal */}
+        <AnimatePresence>
+          {notificationToDelete !== null && (
+            <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="relative w-full max-w-sm bg-zinc-950 border border-red-500/20 rounded-[2rem] p-8 text-center shadow-[0_50px_100px_rgba(0,0,0,1)]"
+              >
+                <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center text-red-500 mx-auto mb-6 border border-red-500/20">
+                  <X size={32} strokeWidth={3} />
+                </div>
+                <h3 className="text-lg font-display font-black text-white italic tracking-tighter uppercase mb-2">Delete Alert?</h3>
+                <p className="text-[10px] text-zinc-500 font-medium leading-relaxed mb-8">
+                  This protocol packet will be permanently purged from the local node. This action cannot be reversed.
+                </p>
+                <div className="flex gap-4">
+                  <button 
+                    onClick={() => setNotificationToDelete(null)}
+                    className="flex-1 py-4 bg-zinc-900 border border-white/5 rounded-xl text-[9px] font-black text-zinc-500 uppercase tracking-widest hover:bg-zinc-800 transition-colors"
+                  >
+                    CANCEL
+                  </button>
+                  <button 
+                    onClick={() => handleDeleteNotification(notificationToDelete)}
+                    className="flex-1 py-4 bg-red-600 rounded-xl text-[9px] font-black text-white uppercase tracking-widest hover:bg-red-500 transition-colors shadow-lg shadow-red-600/20"
+                  >
+                    PURGE DATA
+                  </button>
+                </div>
+              </motion.div>
             </div>
           )}
         </AnimatePresence>

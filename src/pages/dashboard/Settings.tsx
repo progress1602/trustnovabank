@@ -24,9 +24,10 @@ import {
 } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { useStore } from '@/src/lib/store';
+import { CountrySelect, StateSelect } from '@/src/components/ui/CountrySelect';
 
 export default function Settings() {
-  const { theme, toggleTheme, fullName } = useStore();
+  const { theme, toggleTheme, fullName, country, state, updateUser } = useStore();
   const email = "a.sokolov@sovereign.node"; 
   const [currency, setCurrency] = useState('USD');
   const [language, setLanguage] = useState('English (US)');
@@ -84,21 +85,25 @@ export default function Settings() {
                      <label className="text-[10px] font-black text-zinc-800 uppercase tracking-[0.4em] ml-2 italic">Corridor Uplink (Email)</label>
                      <div className="relative group">
                         <Mail className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-800 group-focus-within:text-gold transition-colors" size={18} />
-                        <input defaultValue={email} className="w-full bg-black border border-white/10 rounded-2x p-7 pl-16 text-[10px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all" />
+                        <input defaultValue={email} className="w-full bg-black border border-white/10 rounded-2xl p-7 pl-16 text-[10px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all" />
                      </div>
                   </div>
+                  <CountrySelect 
+                     label="Node Jurisdiction (Country)"
+                     value={country}
+                     onChange={(val) => updateUser({ country: val })}
+                  />
+                  <StateSelect 
+                     label="Jurisdiction State"
+                     country={country}
+                     value={state}
+                     onChange={(val) => updateUser({ state: val })}
+                  />
                   <div className="space-y-4">
                      <label className="text-[10px] font-black text-zinc-800 uppercase tracking-[0.4em] ml-2 italic">Comms Frequency (Phone)</label>
                      <div className="relative group">
                         <Smartphone className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-800 group-focus-within:text-gold transition-colors" size={18} />
-                        <input defaultValue="+1 (555) 001-9284" className="w-full bg-black border border-white/10 rounded-2x p-7 pl-16 text-[10px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all" />
-                     </div>
-                  </div>
-                  <div className="space-y-4">
-                     <label className="text-[10px] font-black text-zinc-800 uppercase tracking-[0.4em] ml-2 italic">Node Jurisdiction (Country)</label>
-                     <div className="relative group">
-                        <Globe className="absolute left-6 top-1/2 -translate-y-1/2 text-zinc-800 group-focus-within:text-gold transition-colors" size={18} />
-                        <input defaultValue="Switzerland" className="w-full bg-black border border-white/10 rounded-2x p-7 pl-16 text-[10px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all" />
+                        <input defaultValue="+1 (555) 001-9284" className="w-full bg-black border border-white/10 rounded-2xl p-7 pl-16 text-[10px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all" />
                      </div>
                   </div>
                </div>

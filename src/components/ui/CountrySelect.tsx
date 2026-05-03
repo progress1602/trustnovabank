@@ -134,8 +134,10 @@ export function StateSelect({ value, country, onChange, disabled, className, lab
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const selectedCountry = COUNTRIES_DATA.find(c => c.name === country) || COUNTRIES_DATA[0];
-  const states = selectedCountry.states;
+  const selectedCountry = COUNTRIES_DATA.find(c => 
+    c.name.trim().toLowerCase() === (country || '').trim().toLowerCase()
+  ) || COUNTRIES_DATA[0];
+  const states = selectedCountry?.states || [];
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

@@ -25,6 +25,8 @@ import {
 import { cn } from '@/src/lib/utils';
 import { useStore } from '@/src/lib/store';
 import { Link, useNavigate } from 'react-router-dom';
+import { CountrySelect, StateSelect } from '@/src/components/ui/CountrySelect';
+import { COUNTRIES_DATA } from '@/src/lib/countries';
 
 const ACCOUNTS = [
   { id: 0, title: '360 Checking', color: 'bg-[#15415f]' },
@@ -42,6 +44,16 @@ export default function DashboardHome() {
   const navigate = useNavigate();
 
   const [countdowns, setCountdowns] = useState<{ [key: number]: number }>({});
+
+  const [cardFormData, setCardFormData] = useState({
+    fullName: 'FULL NAME',
+    address: '',
+    city: '',
+    country: 'United States',
+    state: 'New York',
+    zip: '',
+    dob: ''
+  });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -294,36 +306,81 @@ export default function DashboardHome() {
                       <Info className="text-amber-600" size={24} strokeWidth={2.5} />
                     </div>
                     <p className="text-[10px] sm:text-[11px] font-bold text-amber-900 leading-relaxed uppercase tracking-tight italic">
-                      Notice: A Deposit of <span className="font-black text-amber-600">${cardActivation[activeCardIdx].depositAmount}</span> will be required upon approval of your card protocol.
+                      Notice: A Deposit of <span className="font-black text-amber-600">${cardActivation[activeCardIdx].depositAmount}</span> will be required before card approval.
                     </p>
                   </div>
 
-                  {/* Form Fields */}
+                   {/* Form Fields */}
                   <form className="p-8 sm:p-14 space-y-8 sm:space-y-10" onSubmit={handleFinalizeActivation}>
                     <div className="grid sm:grid-cols-2 gap-6 sm:gap-8">
                        <div className="col-span-full space-y-3">
                           <label className="text-[10px] font-black text-zinc-800 uppercase tracking-widest ml-2 italic">Full Name on Card *</label>
-                          <input defaultValue="HENRY DAVID" className="w-full bg-black border border-white/10 rounded-2xl p-5 sm:p-6 text-[10px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all" required />
+                          <input 
+                            value={cardFormData.fullName}
+                            onChange={(e) => setCardFormData({...cardFormData, fullName: e.target.value})}
+                            className="w-full bg-black border border-white/10 rounded-2xl p-5 sm:p-6 text-[10px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all" required 
+                          />
                        </div>
                        <div className="col-span-full space-y-3">
                           <label className="text-[10px] font-black text-zinc-800 uppercase tracking-widest ml-2 italic">Residential Address *</label>
-                          <input placeholder="STREET ADDRESS" className="w-full bg-black border border-white/10 rounded-2xl p-5 sm:p-6 text-[10px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all" required />
+                          <input 
+                            placeholder="STREET ADDRESS" 
+                            className="w-full bg-black border border-white/10 rounded-2xl p-5 sm:p-6 text-[10px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all" 
+                            required 
+                            value={cardFormData.address}
+                            onChange={(e) => setCardFormData({...cardFormData, address: e.target.value})}
+                          />
                        </div>
+                       
+                       <CountrySelect 
+                         label="Country *"
+                         value={cardFormData.country}
+                         onChange={(val) => {
+                            const countryObj = COUNTRIES_DATA.find((c: any) => c.name === val);
+                            setCardFormData({
+                               ...cardFormData, 
+                               country: val,
+                               state: countryObj?.states[0] || ''
+                            });
+                         }}
+                       />
+
+                       <StateSelect 
+                        label="State / Province *"
+                        country={cardFormData.country}
+                        value={cardFormData.state}
+                        onChange={(val) => setCardFormData({...cardFormData, state: val})}
+                       />
+
                        <div className="space-y-3">
                           <label className="text-[10px] font-black text-zinc-800 uppercase tracking-widest ml-2 italic">City *</label>
-                          <input placeholder="CITY" className="w-full bg-black border border-white/10 rounded-2xl p-5 sm:p-6 text-[10px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all" required />
-                       </div>
-                       <div className="space-y-3">
-                          <label className="text-[10px] font-black text-zinc-800 uppercase tracking-widest ml-2 italic">State *</label>
-                          <input placeholder="STATE" className="w-full bg-black border border-white/10 rounded-2xl p-5 sm:p-6 text-[10px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all" required />
+                          <input 
+                            placeholder="CITY" 
+                            className="w-full bg-black border border-white/10 rounded-2xl p-5 sm:p-6 text-[10px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all" 
+                            required 
+                            value={cardFormData.city}
+                            onChange={(e) => setCardFormData({...cardFormData, city: e.target.value})}
+                          />
                        </div>
                        <div className="space-y-3">
                           <label className="text-[10px] font-black text-zinc-800 uppercase tracking-widest ml-2 italic">ZIP Code *</label>
-                          <input placeholder="00000" className="w-full bg-black border border-white/10 rounded-2xl p-5 sm:p-6 text-[10px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all" required />
+                          <input 
+                            placeholder="00000" 
+                            className="w-full bg-black border border-white/10 rounded-2xl p-5 sm:p-6 text-[10px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all" 
+                            required 
+                            value={cardFormData.zip}
+                            onChange={(e) => setCardFormData({...cardFormData, zip: e.target.value})}
+                          />
                        </div>
-                       <div className="space-y-3">
+                       <div className="col-span-full space-y-3">
                           <label className="text-[10px] font-black text-zinc-800 uppercase tracking-widest ml-2 italic">Date of Birth *</label>
-                          <input type="date" className="w-full bg-black border border-white/10 rounded-2xl p-5 sm:p-6 text-[10px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all" required />
+                          <input 
+                            type="date" 
+                            className="w-full bg-black border border-white/10 rounded-2xl p-5 sm:p-6 text-[10px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all" 
+                            required 
+                            value={cardFormData.dob}
+                            onChange={(e) => setCardFormData({...cardFormData, dob: e.target.value})}
+                          />
                        </div>
                     </div>
 

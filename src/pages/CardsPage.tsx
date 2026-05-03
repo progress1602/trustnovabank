@@ -17,7 +17,7 @@ const cardTypes = [
   },
   {
     title: 'Physical Card',
-    desc: 'Crafted from premium black steel for worldwide ATM & POS use.',
+    desc: 'Crafted from premium black steel for worldwide ATM & Online use.',
     icon: Globe,
     features: ['Contactless tech', 'Global ATM priority', 'Luxury weight']
   },
