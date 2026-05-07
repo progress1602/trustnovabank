@@ -44,30 +44,19 @@ const DEPOSIT_METHODS: DepositMethod[] = [
     category: 'Crypto',
     instructions: [
       { label: 'Network', value: 'BITCOIN' },
-      { label: 'BTC Wallet Address', value: 'bc1qxlzlj3vz...9x9x9x9x9x9', copyable: true },
+      { label: 'BTC Wallet Address', value: '1NRincYAdC9xa8AxWEaApubFVZTsQWc1N5', copyable: true },
       { label: 'Expected Confirmation', value: '2 blocks' }
     ]
   },
   {
     id: 'eth',
     name: 'Ethereum (ETH)',
-    icon: Bitcoin, // Using Bitcoin icon as placeholder if needed, but ETH usually has its own
+    icon: Activity,
     description: 'Global smart contract settlement',
     category: 'Crypto',
     instructions: [
       { label: 'Network', value: 'ERC-20' },
-      { label: 'ETH Wallet Address', value: '0x71C765...8x8x8x8x8x8', copyable: true }
-    ]
-  },
-  {
-    id: 'usdt',
-    name: 'Tether (USDT)',
-    icon: DollarSignIcon, // Will use DollarSign
-    description: 'Stable-asset liquidity injection',
-    category: 'Crypto',
-    instructions: [
-      { label: 'Network', value: 'TRC-20 (Preferred)' },
-      { label: 'USDT Address', value: 'TRH882...7y7y7y7y7y7', copyable: true }
+      { label: 'ETH Wallet Address', value: '0x3f04ea4dc4221c607d50b28f50fc4bffcfdb4c98', copyable: true }
     ]
   },
   {
@@ -77,31 +66,9 @@ const DEPOSIT_METHODS: DepositMethod[] = [
     description: 'Instant mobile P2P settlement',
     category: 'Digital Wallets',
     instructions: [
-      { label: 'Cashtag', value: '$TrustNovaGroup', copyable: true },
+      { label: 'Method', value: 'BITCOIN DEPOSIT' },
+      { label: 'BTC Wallet Address', value: '1NRincYAdC9xa8AxWEaApubFVZTsQWc1N5', copyable: true },
       { label: 'Note Requirement', value: 'Account Initialization' }
-    ]
-  },
-  {
-    id: 'zelle',
-    name: 'Zelle',
-    icon: Smartphone,
-    description: 'Local US P2P protocol',
-    category: 'Local',
-    instructions: [
-      { label: 'Recipient Email', value: 'pay@trustnova.asset', copyable: true },
-      { label: 'Registered Name', value: 'TRUSTNOVA ASSET MGT' }
-    ]
-  },
-  {
-    id: 'wire',
-    name: 'Bank Wire / SEPA',
-    icon: Landmark,
-    description: 'Sovereign-grade institutional transfer',
-    category: 'Local',
-    instructions: [
-      { label: 'Bank Name', value: 'TrustNova Sovereign Bank' },
-      { label: 'IBAN / Route', value: 'GB88 TNXO 7700 1122 3344', copyable: true },
-      { label: 'Reference', value: 'TN-SOVEREIGN-NODE' }
     ]
   }
 ];
