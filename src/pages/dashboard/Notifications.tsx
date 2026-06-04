@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Bell, 
@@ -24,6 +24,7 @@ import {
   X
 } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
+import { graphqlFetch, NOTIFICATIONS_QUERY, PROFILE_QUERY } from '@/src/lib/graphql';
 
 type NotificationType = 'transaction' | 'alert' | 'verification' | 'news';
 
@@ -90,23 +91,115 @@ const CATEGORIES = [
 export default function Notifications() {
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [notifications, setNotifications] = useState(MOCK_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        let res: any = null;
+        try {
+          res = await graphqlFetch(NOTIFICATIONS_QUERY);
+        } catch (gqlErr) {
+          console.warn("Notifications page query fetch fell back to mock data:", gqlErr);
+          res = { notifications: MOCK_NOTIFICATIONS };
+        }
+
+        let profRes: any = null;
+        try {
+          profRes = await graphqlFetch(PROFILE_QUERY);
+        } catch (gqlErr) {
+          console.warn("Notifications page profile query fetch fell back to store or empty:", gqlErr);
+        }
+
+        let list = [...(res?.notifications || [])];
+
+        if (profRes && profRes.profile) {
+          const { totalDeposits, totalWithdrawals, totalTransfers } = profRes.profile;
+          
+          const depositNotif = {
+            id: 'sys-total-deposits',
+            type: 'transaction',
+            title: 'TOTAL DEPOSITS RECONCILIATION',
+            message: `Your sovereign global terminal has cleared a cumulative total of $${(totalDeposits || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} USD across all authenticated liquidity conduits.`,
+            isRead: false,
+            unread: true,
+            createdAt: new Date().toISOString()
+          };
+
+          const withdrawalNotif = {
+            id: 'sys-total-withdrawals',
+            type: 'alert',
+            title: 'TOTAL WITHDRAWALS RECONCILIATION',
+            message: `Integrated security audits report a total aggregated withdrawal volume of $${(totalWithdrawals || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} USD from your secure private vault.`,
+            isRead: false,
+            unread: true,
+            createdAt: new Date().toISOString()
+          };
+
+          const transferNotif = {
+            id: 'sys-total-transfers',
+            type: 'verification',
+            title: 'TOTAL WIRE TRANSFERS RECONCILIATION',
+            message: `System ledger records confirm a total successful outbound transfer protocol of $${(totalTransfers || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})} USD to outer institutions.`,
+            isRead: false,
+            unread: true,
+            createdAt: new Date().toISOString()
+          };
+
+          list = [depositNotif, withdrawalNotif, transferNotif, ...list];
+        }
+
+        if (res && res.notifications) {
+          setNotifications(list);
+        } else if (list.length > 0) {
+          setNotifications(list);
+        }
+      } catch (err) {
+        console.error("Notifications page core handler encountered error:", err);
+      }
+    };
+    fetchNotifications();
+  }, []);
+
+  const getNotificationTime = (n: any) => {
+    if (n.time) return n.time;
+    if (!n.createdAt) return 'RECENT';
+    try {
+      const diffMs = Date.now() - new Date(n.createdAt).getTime();
+      const diffMins = Math.floor(diffMs / 60000);
+      if (diffMins < 1) return 'JUST NOW';
+      if (diffMins < 60) return `${diffMins}M AGO`;
+      const diffHours = Math.floor(diffMins / 60);
+      if (diffHours < 24) return `${diffHours}H AGO`;
+      const diffDays = Math.floor(diffHours / 24);
+      return `${diffDays}D AGO`;
+    } catch (e) {
+      return 'RECENT';
+    }
+  };
 
   const filtered = useMemo(() => {
     return notifications.filter(n => {
-      const matchTab = activeTab === 'all' || n.type === activeTab;
-      const matchSearch = n.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          n.message.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchTab = activeTab === 'all' || (n.type || '').toLowerCase() === activeTab.toLowerCase();
+      const matchSearch = (n.title || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (n.message || '').toLowerCase().includes(searchQuery.toLowerCase());
       return matchTab && matchSearch;
     });
   }, [notifications, activeTab, searchQuery]);
 
   const markAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+    setNotifications(prev => prev.map(n => ({ ...n, unread: false, isRead: true })));
   };
 
   const clearSignals = () => {
     setNotifications([]);
+  };
+
+  const deleteSignal = (id: any) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
   return (
@@ -213,20 +306,20 @@ export default function Notifications() {
                         transition={{ delay: idx * 0.05 }}
                         className={cn(
                           "p-10 lg:p-14 flex items-start gap-12 hover:bg-gold/[0.01] transition-all group cursor-pointer relative overflow-hidden",
-                          n.unread && "border-l-4 border-l-gold bg-gold/[0.01]"
+                          (n.unread || n.isRead === false) && "border-l-4 border-l-gold bg-gold/[0.01]"
                         )}
                       >
                          <div className={cn(
                            "w-16 h-16 rounded-[1.5rem] flex items-center justify-center border shrink-0 transition-all duration-700",
-                           n.type === 'transaction' ? 'bg-emerald-500/5 border-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-black' :
-                           n.type === 'alert' ? 'bg-red-500/5 border-red-500/10 text-red-500 group-hover:bg-red-500 group-hover:text-white' :
-                           n.type === 'verification' ? 'bg-gold/5 border-gold/10 text-gold group-hover:bg-gold group-hover:text-black' :
+                           (n.type || '').toLowerCase() === 'transaction' ? 'bg-emerald-500/5 border-emerald-500/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-black' :
+                           (n.type || '').toLowerCase() === 'alert' ? 'bg-red-500/5 border-red-500/10 text-red-500 group-hover:bg-red-500 group-hover:text-white' :
+                           (n.type || '').toLowerCase() === 'verification' ? 'bg-gold/5 border-gold/10 text-gold group-hover:bg-gold group-hover:text-black' :
                            'bg-zinc-900 border-white/5 text-white group-hover:bg-white group-hover:text-black'
                          )}>
-                            {n.type === 'transaction' && <Database size={28} strokeWidth={2.5} />}
-                            {n.type === 'alert' && <ShieldAlert size={28} strokeWidth={2.5} />}
-                            {n.type === 'verification' && <ShieldCheck size={28} strokeWidth={2.5} />}
-                            {n.type === 'news' && <Radio size={28} strokeWidth={2.5} />}
+                            {(n.type || '').toLowerCase() === 'transaction' && <Database size={28} strokeWidth={2.5} />}
+                            {(n.type || '').toLowerCase() === 'alert' && <ShieldAlert size={28} strokeWidth={2.5} />}
+                            {(n.type || '').toLowerCase() === 'verification' && <ShieldCheck size={28} strokeWidth={2.5} />}
+                            {(!n.type || ((n.type || '').toLowerCase() !== 'transaction' && (n.type || '').toLowerCase() !== 'alert' && (n.type || '').toLowerCase() !== 'verification')) && <Radio size={28} strokeWidth={2.5} />}
                          </div>
 
                          <div className="flex-1 space-y-4">
@@ -234,16 +327,19 @@ export default function Notifications() {
                                <div className="space-y-1">
                                   <h4 className={cn(
                                     "text-xl font-display font-black italic tracking-tighter transition-colors uppercase leading-tight",
-                                    n.unread ? "text-white group-hover:text-gold" : "text-zinc-600 group-hover:text-zinc-400"
+                                    (n.unread || n.isRead === false) ? "text-white group-hover:text-gold" : "text-zinc-650 group-hover:text-zinc-400"
                                   )}>
                                     {n.title}
                                   </h4>
                                   <div className="flex items-center gap-3">
                                      <div className="w-1 h-1 bg-zinc-800 rounded-full" />
-                                     <span className="text-[9px] font-black text-zinc-800 uppercase tracking-widest">{n.time}</span>
+                                     <span className="text-[9px] font-black text-zinc-800 uppercase tracking-widest">{getNotificationTime(n)}</span>
                                   </div>
-                               </div>
-                               <button className="p-3 bg-black border border-white/5 text-zinc-900 hover:text-red-500 rounded-xl transition-all">
+                                </div>
+                               <button 
+                                 onClick={() => deleteSignal(n.id)}
+                                 className="p-3 bg-black border border-white/5 text-zinc-900 hover:text-red-500 rounded-xl transition-all"
+                               >
                                   <Trash2 size={16} />
                                </button>
                             </div>

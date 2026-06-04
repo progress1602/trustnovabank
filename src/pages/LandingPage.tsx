@@ -18,6 +18,14 @@ export default function LandingPage() {
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
+    
+    // Pre-warm the backend node immediately when LandingPage mounts to wake up Render container early
+    fetch('https://manual-bank.onrender.com/graphql', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: '{ __schema { queryType { name } } }' })
+    }).catch(() => {});
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -91,113 +99,20 @@ export default function LandingPage() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, delay: 0.2 }}
-            className="relative flex justify-center py-10 lg:py-20"
+            className="relative flex justify-center items-center py-6 w-full"
           >
-            {/* Realism Base - The Podium */}
-            <div className="absolute bottom-[10%] w-[120%] h-[20%] bg-gradient-to-t from-gold/5 to-transparent rounded-full blur-[100px]" />
-            <div className="absolute bottom-[15%] w-[80%] h-4 bg-zinc-900/50 rounded-full blur-[20px]" />
-
-            <div className="relative w-full max-w-md aspect-square flex items-center justify-center">
-              {/* Premium Card Visual - Floating */}
-              <motion.div 
-                animate={{ y: [0, -10, 0], rotate: [-15, -13, -15] }}
-                transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute top-[10%] md:top-[15%] -left-4 md:-left-8 z-30 w-[75%] md:w-[65%] aspect-[1.58/1] bg-gradient-to-br from-zinc-800 to-black rounded-xl border border-white/10 p-4 md:p-6 shadow-[0_30px_60px_rgba(0,0,0,0.8)]"
-              >
-                <div className="flex justify-between items-start mb-6 md:mb-8">
-                   <div className="flex items-center gap-1.5 transform -translate-y-1">
-                      <div className="bg-gold p-0.5 rounded-sm">
-                        <Landmark size={10} md:size={12} className="text-black" />
-                      </div>
-                      <span className="text-[7px] md:text-[8px] font-black tracking-tighter text-white">TRUSTNOVA</span>
-                   </div>
-                   <div className="w-8 h-6 bg-gold/20 rounded-md border border-gold/10" />
-                </div>
-                <p className="text-white font-mono text-[9px] md:text-[11px] tracking-[0.2em] mb-4">4832 1234 5678 9021</p>
-                <div className="flex justify-between items-end">
-                   <div>
-                     <p className="text-zinc-500 text-[6px] font-bold uppercase tracking-widest leading-none">VALID THRU</p>
-                     <p className="text-white text-[8px] font-bold">12/28</p>
-                     <p className="text-white text-[8px] font-black uppercase mt-1">DAVID JOHNSON</p>
-                   </div>
-                   <div className="text-right">
-                      <span className="text-white italic font-black text-lg leading-none">VISA</span>
-                      <p className="text-[6px] font-bold uppercase text-zinc-500">DEBIT</p>
-                   </div>
-                </div>
-              </motion.div>
-
-              {/* High-Quality Phone Mockup */}
-              <div className="relative z-20 w-[70%] md:w-[60%] h-[400px] md:h-[480px] bg-black border-[6px] md:border-[8px] border-[#1a1a1a] rounded-[2.8rem] md:rounded-[3.2rem] shadow-[0_50px_100px_rgba(0,0,0,1)] overflow-hidden group">
-                {/* Gloss Effect */}
-                <div className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent skew-y-[-20deg] -translate-y-full group-hover:translate-y-0 transition-transform duration-1000 pointer-events-none z-40" />
-                
-                {/* Screen Content */}
-                <div className="absolute inset-0 bg-[#050505] p-5 pt-8">
-                   <div className="flex justify-between items-center mb-6">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-zinc-800 border border-white/5" />
-                        <div>
-                          <p className="text-[6px] text-zinc-500">Welcome back,</p>
-                          <p className="text-[9px] font-black text-white">David Johnson</p>
-                        </div>
-                      </div>
-                      <div className="w-7 h-7 rounded-full bg-zinc-900 border border-white/5 flex items-center justify-center">
-                         <Activity size={12} className="text-zinc-500" />
-                      </div>
-                   </div>
-
-                   <div className="bg-gradient-to-br from-zinc-900/80 to-black p-5 rounded-[1.8rem] border border-white/5 mb-5 shadow-xl">
-                      <p className="text-[7px] uppercase font-bold text-zinc-500 mb-1">Total Balance</p>
-                      <p className="text-xl font-black text-white leading-none">$2,580,000.00</p>
-                      <p className="text-[7px] text-zinc-600 mt-2 font-mono tracking-widest">•••• •••• •••• 4832</p>
-                   </div>
-
-                   <div className="grid grid-cols-4 gap-2 mb-6">
-                      {['Send', 'Receive', 'Deposit', 'More'].map((btn, i) => (
-                        <div key={i} className="flex flex-col items-center gap-1.5">
-                           <div className="w-9 h-9 bg-zinc-900 border border-white/5 rounded-xl flex items-center justify-center text-gold shadow-lg">
-                             {i===0 ? <ArrowUpRight size={14} /> : i===1 ? <ArrowDownLeft size={14} /> : i===2 ? <Landmark size={14} /> : <div className="flex gap-0.5"><div className="w-0.5 h-0.5 bg-gold rounded-full"/><div className="w-0.5 h-0.5 bg-gold rounded-full"/><div className="w-0.5 h-0.5 bg-gold rounded-full"/></div>}
-                           </div>
-                           <span className="text-[7px] text-zinc-500 font-bold">{btn}</span>
-                        </div>
-                      ))}
-                   </div>
-
-                   <div className="space-y-3">
-                      <div className="flex justify-between items-center px-1">
-                        <span className="text-[8px] font-black text-white uppercase tracking-widest">Recent Transactions</span>
-                        <span className="text-[7px] text-gold font-bold">See all</span>
-                      </div>
-                      {[
-                        { name: 'Transfer to Sarah', amt: '-$120,000', color: 'text-white' },
-                        { name: 'Deposit', amt: '+$500,000', color: 'text-green-500' },
-                      ].map((tx, i) => (
-                        <div key={i} className="flex items-center justify-between p-3 bg-zinc-900/50 rounded-xl border border-white/5">
-                           <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-lg bg-zinc-800" />
-                              <span className="text-[8px] font-bold text-white">{tx.name}</span>
-                           </div>
-                           <span className={`text-[8px] font-black ${tx.color}`}>{tx.amt}</span>
-                        </div>
-                      ))}
-                   </div>
-                </div>
-
-                {/* iPhone Notch/Dynamic Island */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-6 bg-black rounded-b-xl z-50 flex items-center justify-center">
-                   <div className="w-8 h-1 bg-zinc-900 rounded-full" />
-                </div>
-              </div>
-
-              {/* Floating Decorative Gold Sphere */}
-              <motion.div 
-                animate={{ y: [0, 15, 0] }}
-                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -right-4 top-1/4 w-12 h-12 bg-gradient-to-br from-gold/40 to-transparent rounded-full blur-xl"
+            {/* Ambient Background Glow */}
+            <div className="absolute inset-0 bg-gradient-to-t from-gold/5 via-transparent to-transparent rounded-full blur-[100px] pointer-events-none" />
+            
+            <div className="relative w-full max-w-3xl lg:max-w-4xl xl:max-w-5xl rounded-[2rem] overflow-hidden border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.95)] bg-zinc-950 h-[280px] sm:h-[380px] md:h-[480px] lg:h-[520px]">
+              <img 
+                src="https://res.cloudinary.com/progresshenry/image/upload/v1780317820/trustnova_hero_l1hzby.jpg"
+                alt="TrustNova Premium Banking"
+                className="w-full h-full object-cover block select-none"
+                referrerPolicy="no-referrer"
               />
             </div>
           </motion.div>

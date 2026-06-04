@@ -14,6 +14,7 @@ import {
 import { cn } from '@/src/lib/utils';
 import { useStore } from '@/src/lib/store';
 import { useNavigate } from 'react-router-dom';
+import { graphqlFetch, CREATE_CHARITY_MUTATION } from '@/src/lib/graphql';
 
 const CHARITIES = [
   {
@@ -47,13 +48,82 @@ const CHARITIES = [
 ];
 
 export default function Charity() {
-  const { balance } = useStore();
+  const { balance, showToast } = useStore();
   const navigate = useNavigate();
   const [selectedCharity, setSelectedCharity] = useState(CHARITIES[0]);
   const [amount, setAmount] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
+  const [donorMessage, setDonorMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [success, setSuccess] = useState(false);
 
   const lowBalance = balance < Number(amount);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!amount || lowBalance) return;
+
+    setSubmitting(true);
+    setSubmitError('');
+    try {
+      const input = {
+        amount: Number(amount),
+        organizationName: selectedCharity.name,
+        message: isAnonymous ? `ANONYMOUS DONATION: ${donorMessage || 'N/A'}` : (donorMessage || 'GOD BLESS')
+      };
+
+      await graphqlFetch(CREATE_CHARITY_MUTATION, { input });
+      showToast(`Generous donation of $${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} to ${selectedCharity.name} processed successfully.`, 'success', 'HUMANITARIAN FLOW SIGNED');
+      setSuccess(true);
+    } catch (err: any) {
+      console.error("Charity donation error:", err);
+      setSubmitError(err.message || 'Donation validation error. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (success) {
+    return (
+      <div className="max-w-xl mx-auto py-24 px-6 text-center space-y-12">
+        <div className="relative inline-block mx-auto">
+          <div className="absolute inset-0 bg-emerald-500 blur-[60px] opacity-20 animate-pulse" />
+          <div className="w-32 h-32 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center text-emerald-500 relative z-10 mx-auto group">
+            <Heart size={64} className="group-hover:scale-110 transition-transform duration-500" strokeWidth={2.5} />
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <h2 className="text-4xl lg:text-5xl font-display font-black text-white italic tracking-tighter uppercase">DONATION <span className="text-emerald-500">RECEIVED</span></h2>
+          <p className="text-zinc-500 font-bold max-w-md mx-auto text-xs uppercase leading-loose tracking-widest leading-relaxed">
+            Your generous donation of <span className="text-white font-black italic">${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span> to <span className="text-white font-black">{selectedCharity.name}</span> has been debited and queued for real-time disbursement. Thank you for your humanitarian protocol.
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+          <button 
+            type="button"
+            onClick={() => navigate('/dashboard')}
+            className="bg-emerald-600 text-white px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] italic shadow-2xl hover:bg-emerald-500 transition-all w-full sm:w-auto"
+          >
+            RETURN TO DASHBOARD
+          </button>
+          <button 
+            type="button"
+            onClick={() => {
+              setAmount('');
+              setDonorMessage('');
+              setSuccess(false);
+            }}
+            className="bg-zinc-950 text-white border border-white/10 px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] italic hover:bg-zinc-900 transition-all w-full sm:w-auto"
+          >
+            NEW CONTRIBUTE
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto py-12 px-6 space-y-10 pb-24">
@@ -116,7 +186,7 @@ export default function Charity() {
             <p className="text-zinc-600 font-bold uppercase tracking-[0.3em] text-[10px] italic">Complete your contribution</p>
           </div>
 
-          <form className="space-y-8 relative z-10" onSubmit={(e) => e.preventDefault()}>
+          <form className="space-y-8 relative z-10" onSubmit={handleSubmit}>
             <div className="space-y-4">
               <label className="text-[10px] font-black text-zinc-800 uppercase tracking-widest ml-2 italic">How much would you like to donate? *</label>
               <div className="relative group">
@@ -151,6 +221,8 @@ export default function Charity() {
                     <MessageSquare className="absolute left-6 top-6 text-zinc-800 group-focus-within:text-gold transition-colors" size={20} />
                     <textarea 
                       placeholder="YOUR MESSAGE..." 
+                      value={donorMessage}
+                      onChange={(e) => setDonorMessage(e.target.value)}
                       className="w-full bg-black border border-white/10 rounded-2xl p-6 pl-16 h-32 text-[11px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all resize-none" 
                     />
                  </div>
@@ -175,11 +247,19 @@ export default function Charity() {
               </div>
             )}
 
+            {submitError && (
+              <div className="p-5 bg-red-500/5 border border-red-500/10 rounded-2xl text-[10px] text-red-500 font-bold uppercase tracking-widest text-center">
+                {submitError}
+              </div>
+            )}
+
             <button 
-              disabled={lowBalance || !amount}
+              type="submit"
+              disabled={submitting || lowBalance || !amount}
               className="w-full h-20 bg-emerald-600 text-white rounded-3xl text-[11px] font-black uppercase tracking-[0.5em] italic shadow-[0_20px_50px_rgba(5,150,105,0.25)] hover:scale-105 active:scale-95 transition-all disabled:grayscale disabled:opacity-30 disabled:cursor-not-allowed group flex items-center justify-center gap-4"
             >
-              Donate Now <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              {submitting ? "Processing Donation..." : "Donate Now"} 
+              {!submitting && <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />}
             </button>
           </form>
         </div>

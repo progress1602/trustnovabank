@@ -32,6 +32,9 @@ interface Account {
 
 interface UserState {
   balance: number;
+  primaryBalance: number;
+  tertiaryBalance: number;
+  secondaryBalance: number;
   fullName: string;
   firstName: string;
   lastName: string;
@@ -65,7 +68,10 @@ interface UserState {
   theme: 'dark' | 'light';
   isAuthenticated: boolean;
   isPinVerified: boolean;
+  toast: { show: boolean; message: string; type: 'success' | 'error' | 'info'; title?: string } | null;
   
+  showToast: (message: string, type?: 'success' | 'error' | 'info', title?: string) => void;
+  hideToast: () => void;
   setAuthenticated: (status: boolean) => void;
   setPinVerified: (status: boolean) => void;
   deposit: (amount: number, method: string, status?: Transaction['status']) => void;
@@ -75,12 +81,16 @@ interface UserState {
   toggleCardStatus: (cardId: string) => void;
   toggleTheme: () => void;
   updateUser: (data: Partial<UserState>) => void;
+  setGraphQLUser: (user: any) => void;
   updateCardActivation: (cardIdx: number, data: Partial<UserState['cardActivation'][number]>) => void;
   logout: () => void;
 }
 
 export const useStore = create<UserState>((set) => ({
   balance: 0.00,
+  primaryBalance: 0.00,
+  tertiaryBalance: 0.00,
+  secondaryBalance: 0.00,
   fullName: "Henry David",
   firstName: "Henry",
   lastName: "David",
@@ -91,24 +101,23 @@ export const useStore = create<UserState>((set) => ({
   memberSince: "May 2026",
   currency: "USD",
   accountType: "Savings/Checking",
-  occupation: "Sovereign Node Operator",
+  occupation: "Private Investor",
   country: "United States",
-  address: "123 Sovereign Way",
+  address: "123 Park Avenue",
   city: "London",
   state: "Greater London",
   zip: "EC1A 1BB",
   dob: "1990-01-01",
   profilePic: null,
-  pin: "0000",
+  pin: localStorage.getItem('user_pin') || "0000",
   tier: "Member",
   theme: 'dark',
-  isAuthenticated: false,
-  isPinVerified: false,
+  isAuthenticated: !!localStorage.getItem('token'),
+  isPinVerified: localStorage.getItem('is_pin_verified') === 'true',
   cardActivation: {
     0: { status: 'idle', requestedAt: null, depositAmount: 500 },
-    1: { status: 'idle', requestedAt: null, depositAmount: 700 },
-    2: { status: 'idle', requestedAt: null, depositAmount: 900 },
-    3: { status: 'idle', requestedAt: null, depositAmount: 1200 },
+    1: { status: 'idle', requestedAt: null, depositAmount: 1000 },
+    2: { status: 'idle', requestedAt: null, depositAmount: 1500 },
   },
   transactions: [],
   cards: [],
@@ -118,9 +127,22 @@ export const useStore = create<UserState>((set) => ({
     { id: 'acc3', name: '360 Performance Savings', number: '7821', type: 'Savings', balance: 0.00, status: 'Active' },
     { id: 'acc4', name: 'QUICKSILVER Credit', number: '4432', type: 'Credit', balance: 0.00, status: 'Active' },
   ],
+  toast: null,
+
+  showToast: (message, type = 'info', title) => {
+    set({ toast: { show: true, message, type, title } });
+  },
+  hideToast: () => set({ toast: null }),
 
   setAuthenticated: (status) => set({ isAuthenticated: status }),
-  setPinVerified: (status) => set({ isPinVerified: status }),
+  setPinVerified: (status) => {
+    if (status) {
+      localStorage.setItem('is_pin_verified', 'true');
+    } else {
+      localStorage.removeItem('is_pin_verified');
+    }
+    set({ isPinVerified: status });
+  },
   deposit: (amount, method, status = 'Pending') => set((state) => ({
     balance: status === 'Approved' ? state.balance + amount : state.balance,
     transactions: [
@@ -168,7 +190,66 @@ export const useStore = create<UserState>((set) => ({
     )
   })),
 
-  updateUser: (data) => set((state) => ({ ...state, ...data })),
+  updateUser: (data) => set((state) => {
+    if (data.pin !== undefined) {
+      localStorage.setItem('user_pin', data.pin);
+    }
+    const emailKey = (data.email || state.email || '').toLowerCase();
+    if (emailKey) {
+      if (data.firstName) localStorage.setItem(`user_first_${emailKey}`, data.firstName);
+      if (data.lastName) localStorage.setItem(`user_last_${emailKey}`, data.lastName);
+      if (data.phone) localStorage.setItem(`user_phone_${emailKey}`, data.phone);
+      if (data.dob) localStorage.setItem(`user_dob_${emailKey}`, data.dob);
+    }
+    return { ...state, ...data };
+  }),
+  setGraphQLUser: (user) => set((state) => {
+    const emailKey = (user.email || '').toLowerCase();
+    const storedFirst = emailKey ? localStorage.getItem(`user_first_${emailKey}`) : '';
+    const storedLast = emailKey ? localStorage.getItem(`user_last_${emailKey}`) : '';
+    const storedPhone = emailKey ? localStorage.getItem(`user_phone_${emailKey}`) : '';
+    const storedDob = emailKey ? localStorage.getItem(`user_dob_${emailKey}`) : '';
+
+    const first = user.firstName || storedFirst || state.firstName || (emailKey.includes('henry') ? 'Henry' : 'Henry');
+    const last = user.lastName || storedLast || state.lastName || (emailKey.includes('david') ? 'David' : 'David');
+    const phone = user.phoneNumber || storedPhone || state.phone || '+1 (555) 019-2834';
+    const dob = storedDob || state.dob || '1990-01-01';
+
+    if (emailKey) {
+      if (first) localStorage.setItem(`user_first_${emailKey}`, first);
+      if (last) localStorage.setItem(`user_last_${emailKey}`, last);
+      if (phone) localStorage.setItem(`user_phone_${emailKey}`, phone);
+      if (dob) localStorage.setItem(`user_dob_${emailKey}`, dob);
+    }
+
+    const profileImage = user.profileImage;
+    const sanitizedProfilePic = (profileImage && profileImage !== 'null' && profileImage !== 'undefined' && profileImage.trim() !== '') ? profileImage : null;
+
+    return {
+      firstName: first,
+      lastName: last,
+      fullName: `${first} ${last}`.trim() || 'Henry David',
+      email: user.email || '',
+      phone: phone,
+      username: user.username || '',
+      accountNumber: user.accountNumber || '9909219487',
+      memberSince: user.createdAt ? new Date(user.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long' }) : 'May 2026',
+      currency: user.currencyProtocol || 'USD',
+      tier: user.accountTier || 'Member',
+      occupation: user.occupation || '',
+      country: user.country || '',
+      address: user.address || '',
+      city: user.city || '',
+      state: user.stateProvince || '',
+      zip: user.zipPostalCode || '',
+      dob: dob,
+      primaryBalance: user.primaryBalance ?? 0.00,
+      tertiaryBalance: user.tertiaryBalance ?? 0.00,
+      secondaryBalance: user.secondaryBalance ?? 0.00,
+      balance: user.primaryBalance ?? 0.00,
+      profilePic: sanitizedProfilePic,
+    };
+  }),
   updateCardActivation: (cardIdx, data) => set((state) => ({
     cardActivation: {
       ...state.cardActivation,
@@ -176,7 +257,24 @@ export const useStore = create<UserState>((set) => ({
     }
   })),
   logout: () => {
-    window.location.href = '/auth/login';
+    localStorage.removeItem('token');
+    localStorage.removeItem('user_pin');
+    localStorage.removeItem('is_pin_verified');
+    set({ 
+      isAuthenticated: false, 
+      isPinVerified: false,
+      balance: 0.00,
+      fullName: "Henry David",
+      firstName: "Henry",
+      lastName: "David",
+      email: "",
+      phone: "",
+      username: "",
+      accountNumber: "9909219487",
+      profilePic: null,
+      transactions: [],
+      cards: [],
+    });
   },
   toggleTheme: () => set((state) => {
     const nextTheme = state.theme === 'dark' ? 'light' : 'dark';

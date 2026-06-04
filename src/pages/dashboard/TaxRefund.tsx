@@ -151,12 +151,12 @@ export default function TaxRefund() {
              <div className="space-y-6 relative z-10">
                 <h3 className="text-4xl lg:text-6xl font-display font-black text-white italic tracking-tighter uppercase leading-none">REFUND <span className="text-emerald-500">PENDING</span></h3>
                 <p className="text-zinc-600 font-bold max-w-lg mx-auto text-[10px] uppercase leading-loose tracking-widest italic">
-                  Your fiscal reclamation request has been successfully broadcast to the Sovereign Revenue Service. verification protocols are now in progress. typical settlement windows vary between 14-21 cycles.
+                  Your tax refund request has been successfully submitted to the Treasury. Verification is now in progress. Normal processing takes 14-21 business days.
                 </p>
              </div>
 
              <div className="p-10 bg-black border border-white/5 rounded-[2.5rem] flex flex-col gap-3 max-w-sm mx-auto relative z-10 text-center">
-                <p className="text-[9px] text-zinc-800 font-black uppercase tracking-[0.5em] italic">Tracking Protocol Hash</p>
+                <p className="text-[9px] text-zinc-800 font-black uppercase tracking-[0.5em] italic">Tracking ID</p>
                 <p className="text-xl font-display font-black text-gold uppercase tracking-tighter">#TAX-SRC-{Math.floor(Math.random()*1000000)}</p>
              </div>
 

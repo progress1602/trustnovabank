@@ -33,7 +33,7 @@ const BILL_CATEGORIES = [
 ];
 
 export default function PayBills() {
-  const { balance, withdraw } = useStore();
+  const { balance, withdraw, showToast } = useStore();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<typeof BILL_CATEGORIES[0] | null>(null);
@@ -47,9 +47,10 @@ export default function PayBills() {
     setIsProcessing(true);
     setTimeout(() => {
       withdraw(Number(amount), `Bill: ${selectedBiller}`, 'Completed');
+      showToast(`Bill payment of $${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} to ${selectedBiller} has been settled successfully.`, 'success', 'BILL SETTLEMENT COMPLETED');
       setIsProcessing(false);
       setStep(3);
-    }, 2000);
+    }, 1500);
   };
 
   const inputClasses = "w-full bg-black border border-white/10 rounded-2xl p-6 text-[11px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all";

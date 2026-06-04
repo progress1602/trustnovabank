@@ -34,7 +34,7 @@ export default function Transfer() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   
-  const { transfer, balance } = useStore();
+  const { transfer, balance, showToast } = useStore();
   const navigate = useNavigate();
 
   const handleTransfer = (e: React.FormEvent) => {
@@ -42,7 +42,7 @@ export default function Transfer() {
     if (!amount) return;
     
     if (Number(amount) > balance) {
-      alert("Insufficient liquidity for this settlement sequence.");
+      showToast("Insufficient liquidity for this settlement sequence.", "error", "LIQUIDITY DEFICIT");
       return;
     }
 
@@ -55,9 +55,10 @@ export default function Transfer() {
         : 'External Node';
       
       transfer(Number(amount), recipientName, transferType === 'domestic' ? 'Transfer' : 'Wire');
+      showToast(`Transfer of $${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} to ${recipientName} has been performed successfully.`, 'success', 'FUNDS TRANSFERRED');
       setIsProcessing(false);
       setIsSuccess(true);
-    }, 2500);
+    }, 1500); // Also shortened simulator timeout for faster response
   };
 
   if (isSuccess) {

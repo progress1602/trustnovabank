@@ -24,12 +24,13 @@ import { cn } from '@/src/lib/utils';
 import { useStore } from '@/src/lib/store';
 import { COUNTRIES_DATA } from '@/src/lib/countries';
 import { CountrySelect, StateSelect } from '@/src/components/ui/CountrySelect';
+import { graphqlFetch, UPDATE_PROFILE_MUTATION } from '@/src/lib/graphql';
 
 export default function Profile() {
   const { 
     fullName, firstName, lastName, email, phone, occupation, country, 
     address, city, state, zip, dob, profilePic, pin, currency, accountType,
-    logout, updateUser 
+    username, logout, updateUser 
   } = useStore();
   
   const [isEditing, setIsEditing] = useState(false);
@@ -52,7 +53,8 @@ export default function Profile() {
     dob: dob || '',
     pin: pin || '',
     currency: currency || 'USD',
-    accountType: accountType || 'Savings/Checking'
+    accountType: accountType || 'Savings/Checking',
+    username: username || ''
   });
 
   const handleCountryChange = (countryName: string) => {
@@ -84,11 +86,13 @@ export default function Profile() {
       dob: dob || '',
       pin: pin || '',
       currency: currency || 'USD',
-      accountType: accountType || 'Savings/Checking'
+      accountType: accountType || 'Savings/Checking',
+      username: username || ''
     });
-  }, [firstName, lastName, email, phone, occupation, country, address, city, state, zip, dob, pin, currency, accountType]);
+  }, [firstName, lastName, email, phone, occupation, country, address, city, state, zip, dob, pin, currency, accountType, username]);
 
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success'>('idle');
+  const [saveError, setSaveError] = useState('');
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -101,31 +105,58 @@ export default function Profile() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setSaveStatus('saving');
-    // Simulate API call and update store
-    setTimeout(() => {
-      updateUser({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        fullName: `${formData.firstName} ${formData.lastName}`,
-        email: formData.email,
-        phone: formData.phone,
-        occupation: formData.occupation,
-        country: formData.country,
-        address: formData.address,
-        city: formData.city,
-        state: formData.state,
-        zip: formData.zip,
-        dob: formData.dob,
-        pin: formData.pin,
-        currency: formData.currency,
-        accountType: formData.accountType
+    setSaveError('');
+    try {
+      const data = await graphqlFetch(UPDATE_PROFILE_MUTATION, {
+        input: {
+          firstName: formData.firstName || '',
+          lastName: formData.lastName || '',
+          userName: formData.username || '',
+          phoneNumber: formData.phone || '',
+          occupation: formData.occupation || '',
+          address: formData.address || '',
+          country: formData.country || 'United States',
+          stateProvince: formData.state || '',
+          city: formData.city || '',
+          zipPostalCode: formData.zip || '',
+          profileImage: profilePic || null,
+          currencyProtocol: formData.currency || 'USD',
+          dateOfBirth: formData.dob || '1990-01-01'
+        }
       });
-      setSaveStatus('success');
-      setIsEditing(false);
-      setTimeout(() => setSaveStatus('idle'), 3000);
-    }, 1200);
+
+      if (data && data.updateProfile) {
+        const user = data.updateProfile;
+        updateUser({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+          email: user.email || formData.email,
+          phone: formData.phone,
+          occupation: user.occupation || formData.occupation,
+          country: user.country || formData.country,
+          address: user.address || formData.address,
+          city: user.city || formData.city,
+          state: user.stateProvince || formData.state,
+          zip: user.zipPostalCode || formData.zip,
+          profilePic: user.profileImage || profilePic,
+          username: user.username || formData.username,
+          currency: user.currencyProtocol || formData.currency,
+          dob: formData.dob
+        });
+        setSaveStatus('success');
+        setIsEditing(false);
+        setTimeout(() => setSaveStatus('idle'), 3000);
+      } else {
+        setSaveError("System failed to update profile parameters.");
+        setSaveStatus('idle');
+      }
+    } catch (err: any) {
+      setSaveError(err.message || "UPLINK CONNECTION INTERAction CANCELLED.");
+      setSaveStatus('idle');
+    }
   };
 
   const inputClasses = "w-full bg-black border border-white/5 rounded-2xl p-4 text-[11px] font-black text-white uppercase italic tracking-widest outline-none focus:border-gold transition-all disabled:opacity-50 disabled:cursor-not-allowed";
@@ -244,6 +275,11 @@ export default function Profile() {
 
         {/* Right Col: Forms */}
         <div className="bg-zinc-950 border border-white/5 rounded-[4rem] p-8 lg:p-14 shadow-2xl space-y-12">
+           {saveError && (
+              <div id="settings-error" className="p-5 bg-red-950/25 border border-red-500/20 rounded-3xl text-red-500 text-[10px] font-black uppercase tracking-widest text-center italic animate-pulse">
+                 [ SOVEREIGN REJECTION ]: {saveError}
+              </div>
+           )}
            <AnimatePresence mode="wait">
              {saveStatus === 'success' && (
                <motion.div 
@@ -313,6 +349,18 @@ export default function Profile() {
                         disabled={!isEditing}
                         value={formData.phone}
                         onChange={e => setFormData({...formData, phone: e.target.value})}
+                        className={inputClasses} 
+                     />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className={labelClasses}>Username</label>
+                  <div className="relative group">
+                     <User size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-800" />
+                     <input 
+                        disabled={!isEditing}
+                        value={formData.username}
+                        onChange={e => setFormData({...formData, username: e.target.value})}
                         className={inputClasses} 
                      />
                   </div>

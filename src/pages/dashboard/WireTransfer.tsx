@@ -19,9 +19,10 @@ import { useStore } from '@/src/lib/store';
 import { useNavigate } from 'react-router-dom';
 import { CountrySelect, StateSelect } from '@/src/components/ui/CountrySelect';
 import { COUNTRIES_DATA } from '@/src/lib/countries';
+import { graphqlFetch, CREATE_WIRE_TRANSFER_MUTATION } from '@/src/lib/graphql';
 
 export default function WireTransfer() {
-  const { balance } = useStore();
+  const { balance, showToast } = useStore();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -34,6 +35,85 @@ export default function WireTransfer() {
      country: 'United States',
      state: 'New York'
   });
+
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [success, setSuccess] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const amtNum = Number(formData.amount);
+    if (!formData.recipient || !formData.account || !formData.bank || !formData.amount) {
+      setSubmitError('Please complete all mandatory protocols.');
+      return;
+    }
+    if (amtNum < 500 || amtNum > 1000000) {
+      setSubmitError('Transfer limit protocols violated. Must be between $500.00 and $1,000,000.00.');
+      return;
+    }
+    if (balance < amtNum) {
+      setSubmitError('Insufficient liquidity in authenticated nodes.');
+      return;
+    }
+
+    setSubmitting(true);
+    setSubmitError('');
+
+    try {
+      const input = {
+        beneficiaryName: formData.recipient,
+        beneficiaryBank: formData.bank,
+        accountNumber: formData.account,
+        swiftCode: formData.routing || 'N/A',
+        amount: Number(formData.amount),
+        reason: formData.type || 'PROTOCOL SETTLEMENT'
+      };
+
+      await graphqlFetch(CREATE_WIRE_TRANSFER_MUTATION, { input });
+      showToast(`Wire transfer of $${Number(formData.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} to ${formData.recipient} broadcasted successfully!`, 'success', 'WIRE OUTFLOW SIGNED');
+      setSuccess(true);
+    } catch (err: any) {
+      console.error("Wire transfer execution error:", err);
+      setSubmitError(err.message || 'Execution connection failed. Please retry.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (success) {
+    return (
+      <div className="max-w-xl mx-auto py-24 px-6 text-center space-y-12">
+        <div className="relative inline-block mx-auto">
+          <div className="absolute inset-0 bg-[#FF4D00] blur-[60px] opacity-20 animate-pulse" />
+          <div className="w-32 h-32 bg-orange-500/10 border border-orange-500/20 rounded-full flex items-center justify-center text-[#FF4D00] relative z-10 mx-auto group">
+            <CheckCircle2 size={64} className="group-hover:scale-110 transition-transform duration-500" strokeWidth={2.5} />
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <h2 className="text-4xl lg:text-5xl font-display font-black text-white italic tracking-tighter uppercase">TRANSFER <span className="text-[#FF4D00]">BROADCASTED</span></h2>
+          <p className="text-zinc-500 font-bold max-w-md mx-auto text-xs uppercase leading-loose tracking-widest leading-relaxed">
+            Your wire transfer of <span className="text-white font-black italic">${Number(formData.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span> to <span className="text-white font-black">{formData.recipient}</span> has been processed. The funds are cleared and in pipeline settlement.
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="bg-[#FF4D00] text-black px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] italic shadow-2xl hover:scale-105 transition-all w-full sm:w-auto"
+          >
+            RETURN TO DASHBOARD
+          </button>
+          <button 
+            onClick={() => navigate('/dashboard/transactions')}
+            className="bg-zinc-950 text-white border border-white/10 px-10 py-5 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] italic hover:bg-zinc-900 transition-all w-full sm:w-auto"
+          >
+            VIEW LEDGER LOGS
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto pb-24 px-4 sm:px-0">
@@ -59,7 +139,7 @@ export default function WireTransfer() {
         </div>
 
         {/* Form */}
-        <form onSubmit={(e) => e.preventDefault()} className="bg-zinc-950 border border-white/5 rounded-[2.5rem] sm:rounded-[3rem] p-6 sm:p-10 lg:p-14 space-y-6 sm:space-y-8 shadow-2xl">
+        <form onSubmit={handleSubmit} className="bg-zinc-950 border border-white/5 rounded-[2.5rem] sm:rounded-[3rem] p-6 sm:p-10 lg:p-14 space-y-6 sm:space-y-8 shadow-2xl">
           <div className="space-y-3 sm:space-y-4">
              <label className="text-[8px] sm:text-[10px] font-black text-zinc-800 uppercase tracking-widest ml-1 sm:ml-2 italic">Transfer Type *</label>
              <div className="relative">
@@ -150,11 +230,21 @@ export default function WireTransfer() {
                    className="w-full bg-black border border-white/10 rounded-xl sm:rounded-2xl p-6 sm:p-8 pl-12 sm:pl-14 text-2xl sm:text-4xl font-display font-black text-[#FF4D00] uppercase italic tracking-tighter outline-none focus:border-orange-500" 
                  />
              </div>
-             <p className="text-[7px] sm:text-[9px] font-bold text-zinc-700 uppercase tracking-widest italic ml-1 sm:ml-2 text-center sm:text-left">Min: $10,000.00 - Max: $1,000,000.00</p>
+             <p className="text-[7px] sm:text-[9px] font-bold text-zinc-700 uppercase tracking-widest italic ml-1 sm:ml-2 text-center sm:text-left">Min: $500.00 - Max: $1,000,000.00</p>
           </div>
 
-          <button className="w-full h-20 sm:h-24 bg-[#FF4D00] text-black rounded-2xl sm:rounded-3xl text-[10px] sm:text-[11px] font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] italic shadow-[0_20px_50px_rgba(255,77,0,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all mt-4 sm:mt-6">
-            Execute Transfer
+          {submitError && (
+             <div className="p-5 bg-red-500/5 border border-red-500/10 rounded-2xl text-[10px] text-red-500 font-bold uppercase tracking-widest text-center">
+               {submitError}
+             </div>
+          )}
+
+          <button 
+             type="submit"
+             disabled={submitting}
+             className="w-full h-20 sm:h-24 bg-[#FF4D00] text-black rounded-2xl sm:rounded-3xl text-[10px] sm:text-[11px] font-black uppercase tracking-[0.3em] sm:tracking-[0.5em] italic shadow-[0_20px_50px_rgba(255,77,0,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all mt-4 sm:mt-6 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+             {submitting ? "Processing Settlement Protocol..." : "Execute Transfer"}
           </button>
         </form>
       </div>

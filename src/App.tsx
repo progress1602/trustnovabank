@@ -47,6 +47,15 @@ import Profile from '@/src/pages/dashboard/Profile';
 import SecurityDashboard from '@/src/pages/dashboard/Security';
 
 export default function App() {
+  React.useEffect(() => {
+    // Warm up the GraphQL server backend immediately on SPA mount to resolve any Render cold starts proactively
+    fetch('https://manual-bank.onrender.com/graphql', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: '{ __schema { queryType { name } } }' })
+    }).catch(() => {});
+  }, []);
+
   return (
     <BrowserRouter>
       <AnimatePresence mode="wait">

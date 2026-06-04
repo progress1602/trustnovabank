@@ -21,6 +21,7 @@ import {
 import { useStore } from '@/src/lib/store';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/src/lib/utils';
+import { graphqlFetch, CREATE_DEPOSIT_MUTATION } from '@/src/lib/graphql';
 
 type DepositMethod = {
   id: string;
@@ -99,8 +100,105 @@ export default function Deposit() {
   const [selectedMethod, setSelectedMethod] = useState<DepositMethod | null>(null);
   const [proofFile, setProofFile] = useState<File | null>(null);
   const [isCopied, setIsCopied] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState('');
+  const [submitError, setSubmitError] = useState('');
   const deposit = useStore(state => state.deposit);
+  const showToast = useStore(state => state.showToast);
   const navigate = useNavigate();
+
+  const compressImage = (file: File, maxWidth = 600, maxHeight = 600, quality = 0.6): Promise<File> => {
+    return new Promise((resolve) => {
+      if (!file.type.startsWith('image/')) {
+        resolve(file);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob((blob) => {
+              if (blob) {
+                const compressedFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now()
+                });
+                resolve(compressedFile);
+              } else {
+                resolve(file);
+              }
+            }, 'image/jpeg', quality);
+          } else {
+            resolve(file);
+          }
+        };
+        img.onerror = () => resolve(file);
+        img.src = event.target?.result as string;
+      };
+      reader.onerror = () => resolve(file);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const uploadToCloudinary = async (file: File): Promise<string> => {
+    const fallbackBase64 = () => new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    const uploadPromise = async (): Promise<string> => {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'preset_unsigned');
+      formData.append('api_key', 'Om6jzyVgLO4CrAJMaDYaWO-mlEo');
+      const res = await fetch(`https://api.cloudinary.com/v1_1/progresshenry/image/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.secure_url) {
+          return data.secure_url;
+        }
+      }
+      throw new Error("Failed Cloudinary response status");
+    };
+
+    try {
+      const result = await Promise.race([
+        uploadPromise(),
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error("Cloudinary timeout reached")), 3500))
+      ]);
+      return result;
+    } catch (err) {
+      console.warn("Cloudinary upload failed or exceeded threshold, utilizing zero-latency compressed base64 fallback:", err);
+      return await fallbackBase64();
+    }
+  };
 
   const handleCopy = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -108,11 +206,39 @@ export default function Deposit() {
     setTimeout(() => setIsCopied(null), 2000);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || !proofFile || !selectedMethod) return;
-    deposit(Number(amount), selectedMethod.name, 'Pending');
-    setStep(3);
+
+    setSubmitting(true);
+    setSubmitError('');
+    setUploadProgress('Compressing and packaging proof asset...');
+
+    try {
+      const compressedFile = await compressImage(proofFile);
+      setUploadProgress('Uploading proof to secure Cloudinary storage...');
+      const proofUrl = await uploadToCloudinary(compressedFile);
+      setUploadProgress('Broadcasting secure deposit transaction to blockchain nodes...');
+
+      const input = {
+        amount: Number(amount),
+        paymentMethod: selectedMethod.name,
+        proofOfPayment: proofUrl
+      };
+
+      const res = await graphqlFetch(CREATE_DEPOSIT_MUTATION, { input });
+      console.log("CreateDeposit reaction success:", res);
+
+      deposit(Number(amount), selectedMethod.name, 'Pending');
+      showToast(`Deposit of $${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} has been logged. Validation protocol in progress.`, 'success', 'DEPOSIT PACKET ENCRYPTED');
+      setStep(3);
+    } catch (err: any) {
+      console.error("Deposit submission error:", err);
+      setSubmitError(err.message || 'Verification connection failed. Please retry.');
+    } finally {
+      setSubmitting(false);
+      setUploadProgress('');
+    }
   };
 
   return (
@@ -322,11 +448,25 @@ export default function Deposit() {
                      </div>
                   </div>
 
+                  {uploadProgress && (
+                     <div className="p-5 bg-gold/5 border border-gold/10 rounded-2xl text-[10px] text-gold font-bold uppercase tracking-widest text-center animate-pulse">
+                       {uploadProgress}
+                     </div>
+                  )}
+
+                  {submitError && (
+                     <div className="p-5 bg-red-500/5 border border-red-500/10 rounded-2xl text-[10px] text-red-500 font-bold uppercase tracking-widest text-center">
+                       {submitError}
+                     </div>
+                  )}
+
                   <button 
                      type="submit" 
-                     className="w-full bg-emerald-500 text-black py-8 rounded-[2rem] text-sm font-black uppercase tracking-[0.4em] italic shadow-[0_20px_50px_rgba(16,185,129,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4 group"
-                  >
-                     SUBMIT FOR SETTLEMENT <CheckCircle2 size={22} className="group-hover:scale-125 transition-transform" />
+                     disabled={submitting}
+                     className="w-full bg-emerald-500 text-black py-8 rounded-[2rem] text-sm font-black uppercase tracking-[0.4em] italic shadow-[0_20px_50px_rgba(16,185,129,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4 group disabled:opacity-50 disabled:cursor-not-allowed"
+                   >
+                     {submitting ? "VERIFYING PROOF PACKET..." : "SUBMIT FOR SETTLEMENT"} 
+                     {!submitting && <CheckCircle2 size={22} className="group-hover:scale-125 transition-transform" />}
                   </button>
                </form>
             </div>

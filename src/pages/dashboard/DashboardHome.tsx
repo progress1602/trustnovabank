@@ -29,19 +29,28 @@ import { CountrySelect, StateSelect } from '@/src/components/ui/CountrySelect';
 import { COUNTRIES_DATA } from '@/src/lib/countries';
 
 const ACCOUNTS = [
-  { id: 0, title: '360 Checking', color: 'bg-[#15415f]' },
-  { id: 1, title: '360 Checking', color: 'bg-[#15415f]' },
-  { id: 2, title: '360 Performance Savings', color: 'bg-[#1a666e]' },
-  { id: 3, title: 'QUICKSILVER', color: 'bg-[#3d3e42]' },
+  { id: 0, title: 'Primary Sovereign Account', color: 'bg-[#15415f]' },
+  { id: 1, title: 'Tertiary Investment Account', color: 'bg-[#1a666e]' },
+  { id: 2, title: 'Secondary Reserve Account', color: 'bg-[#3d3e42]' },
 ];
 
 export default function DashboardHome() {
-  const { balance, cardActivation, updateCardActivation } = useStore();
+  const { balance, primaryBalance, tertiaryBalance, secondaryBalance, cardActivation, updateCardActivation } = useStore();
   const [showActivateModal, setShowActivateModal] = useState(false);
   const [activeCardIdx, setActiveCardIdx] = useState<number | null>(null);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+
+  const getAccountBalanceDisplay = (idx: number) => {
+    let amt = 0;
+    if (idx === 0) amt = primaryBalance;
+    else if (idx === 1) amt = tertiaryBalance;
+    else if (idx === 2) amt = secondaryBalance;
+    
+    const parts = amt.toFixed(2).split('.');
+    return { whole: Number(parts[0]).toLocaleString(), decimal: parts[1] };
+  };
 
   const [countdowns, setCountdowns] = useState<{ [key: number]: number }>({});
 
@@ -179,9 +188,9 @@ export default function DashboardHome() {
                   <h3 className="text-[10px] sm:text-[12px] font-black text-white/70 uppercase tracking-widest italic">{account.title}</h3>
                   <div className="flex items-start">
                     <span className="text-3xl sm:text-4xl font-display font-black text-white italic mt-1">$</span>
-                    <span className="text-6xl sm:text-7xl lg:text-8xl font-display font-black text-white italic tracking-tighter leading-none mx-1">0</span>
+                    <span className="text-6xl sm:text-7xl lg:text-8xl font-display font-black text-white italic tracking-tighter leading-none mx-1">{getAccountBalanceDisplay(idx).whole}</span>
                     <div className="flex flex-col mt-2">
-                      <span className="text-xl sm:text-2xl font-display font-black text-white italic leading-none">00</span>
+                      <span className="text-xl sm:text-2xl font-display font-black text-white italic leading-none">{getAccountBalanceDisplay(idx).decimal}</span>
                     </div>
                   </div>
                   <p className="text-[9px] sm:text-[10px] font-bold text-white/50 uppercase tracking-[0.2em] italic">Available Balance</p>

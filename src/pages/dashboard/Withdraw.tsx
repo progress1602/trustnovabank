@@ -106,7 +106,7 @@ export default function Withdraw() {
   const [receiverInfo, setReceiverInfo] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   
-  const { balance, withdraw } = useStore();
+  const { balance, withdraw, showToast } = useStore();
   const navigate = useNavigate();
 
   const handleWithdrawRequest = (e: React.FormEvent) => {
@@ -114,7 +114,7 @@ export default function Withdraw() {
     if (!amount || !selectedMethod || !receiverInfo) return;
     
     if (Number(amount) > balance) {
-      alert("Insufficient liquidity in your current sovereign node.");
+      showToast("Insufficient liquidity in your current sovereign node.", "error", "LIQUIDITY DEFICIT");
       return;
     }
 
@@ -123,9 +123,10 @@ export default function Withdraw() {
     // Simulate protocol validation
     setTimeout(() => {
       withdraw(Number(amount), selectedMethod.name, receiverInfo);
+      showToast(`Withdrawal of $${Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} initiated. Validation protocol in progress.`, 'success', 'WITHDRAWAL INITIALIZED');
       setIsProcessing(false);
       setStep(3);
-    }, 3000);
+    }, 2000); // Also shortened from 3s to 2s to make it load/respond faster!
   };
 
   return (
