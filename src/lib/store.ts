@@ -69,9 +69,11 @@ interface UserState {
   isAuthenticated: boolean;
   isPinVerified: boolean;
   toast: { show: boolean; message: string; type: 'success' | 'error' | 'info'; title?: string } | null;
+  isLockModalOpen: boolean;
   
   showToast: (message: string, type?: 'success' | 'error' | 'info', title?: string) => void;
   hideToast: () => void;
+  setLockModalOpen: (open: boolean) => void;
   setAuthenticated: (status: boolean) => void;
   setPinVerified: (status: boolean) => void;
   deposit: (amount: number, method: string, status?: Transaction['status']) => void;
@@ -128,11 +130,13 @@ export const useStore = create<UserState>((set) => ({
     { id: 'acc4', name: 'QUICKSILVER Credit', number: '4432', type: 'Credit', balance: 0.00, status: 'Active' },
   ],
   toast: null,
+  isLockModalOpen: false,
 
   showToast: (message, type = 'info', title) => {
     set({ toast: { show: true, message, type, title } });
   },
   hideToast: () => set({ toast: null }),
+  setLockModalOpen: (open) => set({ isLockModalOpen: open }),
 
   setAuthenticated: (status) => set({ isAuthenticated: status }),
   setPinVerified: (status) => {

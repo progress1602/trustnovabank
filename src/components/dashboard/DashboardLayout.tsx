@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, FormEvent } from 'react';
+import React, { useState, useEffect, useRef, FormEvent } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -312,6 +312,38 @@ export default function DashboardLayout() {
   const toast = useStore(state => state.toast);
   const hideToast = useStore(state => state.hideToast);
 
+  const primaryBalance = useStore(state => state.primaryBalance);
+  const secondaryBalance = useStore(state => state.secondaryBalance);
+  const tertiaryBalance = useStore(state => state.tertiaryBalance);
+  const isLockModalOpen = useStore(state => state.isLockModalOpen);
+  const setLockModalOpen = useStore(state => state.setLockModalOpen);
+  const hasNoMoney = primaryBalance === 0 && secondaryBalance === 0 && tertiaryBalance === 0;
+
+  useEffect(() => {
+    if (hasNoMoney && location.pathname !== '/dashboard' && location.pathname !== '/dashboard/deposit') {
+      setLockModalOpen(true);
+    }
+  }, [hasNoMoney, location.pathname, setLockModalOpen]);
+
+  const handleNavClick = (e: React.MouseEvent, path: string) => {
+    if (hasNoMoney && path !== '/dashboard/deposit' && path !== '/dashboard') {
+      e.preventDefault();
+      setLockModalOpen(true);
+    }
+  };
+
+  const handleCloseLockModal = () => {
+    setLockModalOpen(false);
+    if (location.pathname !== '/dashboard' && location.pathname !== '/dashboard/deposit') {
+      navigate('/dashboard');
+    }
+  };
+
+  const handleGoToDeposit = () => {
+    setLockModalOpen(false);
+    navigate('/dashboard/deposit');
+  };
+
   useEffect(() => {
     if (toast?.show) {
       const timer = setTimeout(() => {
@@ -450,6 +482,7 @@ export default function DashboardLayout() {
               <NavLink
                 key={item.name}
                 to={item.path}
+                onClick={(e) => handleNavClick(e, item.path)}
                 end={item.path === '/dashboard'}
                 className={({ isActive }) => cn(
                   "flex items-center justify-between px-5 py-3.5 rounded-xl transition-all duration-300 group",
@@ -529,7 +562,15 @@ export default function DashboardLayout() {
                    SEARCH_SUGGESTIONS.map((s, i) => (
                       <button 
                         key={i} 
-                        onClick={() => { navigate(s.path); setSearchQuery(''); }}
+                        onClick={() => {
+                          if (hasNoMoney && s.path !== '/dashboard' && s.path !== '/dashboard/deposit') {
+                            setLockModalOpen(true);
+                            setSearchQuery('');
+                            return;
+                          }
+                          navigate(s.path); 
+                          setSearchQuery(''); 
+                        }}
                         className="w-full text-left p-4 hover:bg-gold/10 rounded-xl transition-colors flex items-center justify-between group/s"
                       >
                          <span className="text-[10px] font-black text-zinc-500 group-hover/s:text-gold uppercase italic tracking-widest">{s.name}</span>
@@ -599,6 +640,7 @@ export default function DashboardLayout() {
             <NavLink
               key={item.name}
               to={item.path}
+              onClick={(e) => handleNavClick(e, item.path)}
               end={item.path === '/dashboard'}
               className={({ isActive }) => cn(
                 "flex flex-col items-center gap-1.5 py-1 transition-all",
@@ -654,7 +696,10 @@ export default function DashboardLayout() {
                       <NavLink 
                         key={i} 
                         to={act.path}
-                        onClick={() => setIsSidebarOpen(false)}
+                        onClick={(e) => {
+                          setIsSidebarOpen(false);
+                          handleNavClick(e, act.path);
+                        }}
                         className="flex items-center gap-4 p-4 rounded-xl hover:bg-gold/10 transition-colors group"
                       >
                          <div className="w-10 h-10 bg-zinc-900 rounded-lg flex items-center justify-center text-zinc-500 group-hover:text-gold border border-white/5 transition-colors">
@@ -927,6 +972,101 @@ export default function DashboardLayout() {
                 />
               </div>
             </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Premium Activation Guard Modal */}
+        <AnimatePresence>
+          {isLockModalOpen && (
+            <div className="fixed inset-0 z-[250] flex items-center justify-center p-4 sm:p-6 transition-all">
+              {/* Dark Overlay with heavy blur */}
+              <motion.div 
+                 initial={{ opacity: 0 }}
+                 animate={{ opacity: 1 }}
+                 exit={{ opacity: 0 }}
+                 className="absolute inset-0 bg-black/95 backdrop-blur-xl"
+                 onClick={handleCloseLockModal}
+              />
+
+              {/* Modal Box */}
+              <motion.div 
+                 initial={{ opacity: 0, scale: 0.95, y: 30 }}
+                 animate={{ opacity: 1, scale: 1, y: 0 }}
+                 exit={{ opacity: 0, scale: 0.95, y: 30 }}
+                 transition={{ type: 'spring', damping: 25, stiffness: 180 }}
+                 className="w-full max-w-xl bg-zinc-950 border border-gold/15 rounded-[3rem] sm:rounded-[4rem] overflow-hidden shadow-[0_50px_100px_rgba(212,175,55,0.08)] relative z-10 max-h-[90vh] flex flex-col"
+              >
+                 {/* Close Button */}
+                 <button 
+                   onClick={handleCloseLockModal}
+                   className="absolute top-6 right-6 w-10 h-10 sm:w-12 sm:h-12 bg-white/5 rounded-2xl flex items-center justify-center text-zinc-500 hover:text-white transition-colors z-20"
+                 >
+                    <X size={20} />
+                 </button>
+
+                 {/* Content Scrollable Area */}
+                 <div className="overflow-y-auto flex-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] p-8 sm:p-12 space-y-6 pt-14">
+                    <div className="text-center space-y-3">
+                       <span className="inline-block text-3xl sm:text-4xl animate-bounce">⭐</span>
+                       <h3 className="text-xl sm:text-2xl font-display font-black text-white italic tracking-tighter uppercase">
+                         Unlock Premium <span className="text-gold">Banking Standards</span>
+                       </h3>
+                       <div className="h-[1px] w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent mx-auto" />
+                    </div>
+
+                    <div className="space-y-4 text-center">
+                       <p className="text-[11px] sm:text-xs text-zinc-300 font-bold uppercase tracking-wider leading-relaxed">
+                         Welcome to a smarter way to bank. Your account is just one step away from full activation.
+                       </p>
+                       <p className="text-[10px] sm:text-[11px] text-zinc-500 font-medium leading-relaxed uppercase tracking-widest italic pt-1">
+                         To access our premium banking services, please fund your wallet and activate your card. Once activated, you'll enjoy a secure, reliable, and seamless banking experience designed to meet modern financial needs.
+                       </p>
+                    </div>
+
+                    {/* Features List */}
+                    <div className="bg-black/50 border border-white/5 rounded-3xl p-6 space-y-3 text-left">
+                       <p className="text-[9px] font-black tracking-widest text-gold uppercase italic">Experience Benefits:</p>
+                       <ul className="space-y-2.5">
+                          {[
+                            "Faster and more secure transactions",
+                            "Enhanced account security and protection",
+                            "Instant access to premium financial services",
+                            "Smooth deposits, withdrawals, and transfers",
+                            "Exclusive features available only to activated accounts"
+                          ].map((item, index) => (
+                            <li key={index} className="flex items-start gap-3">
+                               <span className="text-gold mt-0.5">•</span>
+                               <span className="text-[9px] sm:text-[10px] font-bold text-zinc-400 uppercase tracking-wider leading-normal">
+                                 {item}
+                               </span>
+                            </li>
+                          ))}
+                       </ul>
+                    </div>
+
+                    <div className="space-y-6 text-center pt-2">
+                       <p className="text-[10px] sm:text-[11px] text-zinc-400 font-black uppercase tracking-widest leading-relaxed">
+                         Fund your wallet today and activate your card to unlock the full power of your account.
+                       </p>
+                       
+                       <p className="text-[8px] text-gold font-bold uppercase tracking-[0.3em] italic">
+                         Your premium banking journey starts now.
+                       </p>
+                    </div>
+                 </div>
+
+                 {/* Modal Footer / Navigation Trigger */}
+                 <div className="p-6 bg-black border-t border-white/5 text-center shrink-0">
+                    <button
+                      onClick={handleGoToDeposit}
+                      className="w-full py-4.5 bg-gold hover:bg-white text-black font-black uppercase tracking-[0.2em] text-[10px] sm:text-[11px] italic rounded-2xl transition-all cursor-pointer shadow-lg active:scale-98 flex items-center justify-center gap-2 group"
+                    >
+                      <span>Fund Wallet & Activate Now</span>
+                      <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    </button>
+                 </div>
+              </motion.div>
+            </div>
           )}
         </AnimatePresence>
       </main>

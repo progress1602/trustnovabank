@@ -20,13 +20,15 @@ import {
   Clock,
   MessageSquare,
   Search,
-  Heart
+  Heart,
+  RotateCw
 } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { useStore } from '@/src/lib/store';
 import { Link, useNavigate } from 'react-router-dom';
 import { CountrySelect, StateSelect } from '@/src/components/ui/CountrySelect';
 import { COUNTRIES_DATA } from '@/src/lib/countries';
+import { graphqlFetch, PROFILE_QUERY } from '@/src/lib/graphql';
 
 const ACCOUNTS = [
   { id: 0, title: 'Primary Sovereign Account', color: 'bg-[#15415f]' },
@@ -35,12 +37,48 @@ const ACCOUNTS = [
 ];
 
 export default function DashboardHome() {
-  const { balance, primaryBalance, tertiaryBalance, secondaryBalance, cardActivation, updateCardActivation } = useStore();
+  const { 
+    balance, 
+    primaryBalance, 
+    tertiaryBalance, 
+    secondaryBalance, 
+    cardActivation, 
+    updateCardActivation,
+    showToast,
+    setGraphQLUser,
+    setLockModalOpen
+  } = useStore();
   const [showActivateModal, setShowActivateModal] = useState(false);
   const [activeCardIdx, setActiveCardIdx] = useState<number | null>(null);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const navigate = useNavigate();
+
+  const getBalanceAmount = (idx: number) => {
+    if (idx === 0) return primaryBalance;
+    if (idx === 1) return tertiaryBalance;
+    if (idx === 2) return secondaryBalance;
+    return 0;
+  };
+
+  const handleRefreshProfile = async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await graphqlFetch(PROFILE_QUERY);
+      if (res && res.profile) {
+        setGraphQLUser(res.profile);
+        showToast("Account balances refreshed.", "success", "SYNC_SUCCESS");
+      } else {
+        throw new Error("Invalid response received as profile update is empty.");
+      }
+    } catch (err: any) {
+      console.error("Failed to refresh balances:", err);
+      showToast("Could not refresh account balances.", "error", "SYNC_ERROR");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const getAccountBalanceDisplay = (idx: number) => {
     let amt = 0;
@@ -94,6 +132,11 @@ export default function DashboardHome() {
   };
 
   const handleActivate = (idx: number) => {
+    const hasNoMoney = primaryBalance === 0 && secondaryBalance === 0 && tertiaryBalance === 0;
+    if (hasNoMoney) {
+      setLockModalOpen(true);
+      return;
+    }
     if (cardActivation[idx].status !== 'idle') return;
     setActiveCardIdx(idx);
     setShowActivateModal(true);
@@ -161,10 +204,20 @@ export default function DashboardHome() {
            )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+           <button 
+             onClick={handleRefreshProfile}
+             disabled={isRefreshing}
+             className="flex items-center justify-center gap-2 px-4 py-2.5 bg-zinc-950 border border-white/5 hover:border-gold/30 rounded-xl text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-gold transition-all cursor-pointer shadow-lg active:scale-95 disabled:opacity-50"
+             title="Refresh balances"
+           >
+             <RotateCw size={12} className={cn("text-gold", isRefreshing && "animate-spin")} />
+             <span>{isRefreshing ? 'Loading' : 'Refresh'}</span>
+           </button>
+
            <div className="hidden sm:block text-right">
-              <p className="text-[8px] font-black text-zinc-600 uppercase tracking-widest italic">Node Sync</p>
-              <p className="text-[10px] font-black text-white font-mono uppercase italic">ACTIVE_77</p>
+              <p className="text-[8px] font-black text-zinc-650 uppercase tracking-widest italic leading-none">Node Sync</p>
+              <p className="text-[10px] font-black text-white font-mono uppercase italic mt-1 bg-white/5 px-2 py-0.5 rounded border border-white/5">ACTIVE_77</p>
            </div>
         </div>
       </div>
@@ -203,21 +256,23 @@ export default function DashboardHome() {
                 )}
               </div>
 
-              <div className="pt-4 flex items-center gap-3">
-                <button 
-                  onClick={() => handleActivate(idx)}
-                  disabled={cardActivation[idx].status !== 'idle'}
-                  className={cn(
-                    "inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-[10px] sm:text-[11px] font-black uppercase tracking-widest italic transition-all group",
-                    cardActivation[idx].status === 'idle'
-                      ? "bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white hover:text-black shadow-xl"
-                      : "bg-black/50 border border-white/5 text-zinc-500 cursor-not-allowed"
-                  )}
-                >
-                  <CreditCard size={18} strokeWidth={2.5} className="group-hover:scale-110 transition-transform" /> 
-                  {cardActivation[idx].status === 'idle' ? 'Activate Card' : 'Pending Approval'}
-                </button>
-              </div>
+              {getBalanceAmount(idx) === 0 && (
+                <div className="pt-4 flex items-center gap-3">
+                  <button 
+                    onClick={() => handleActivate(idx)}
+                    disabled={cardActivation[idx].status !== 'idle'}
+                    className={cn(
+                      "inline-flex items-center gap-3 px-8 py-4 rounded-2xl text-[10px] sm:text-[11px] font-black uppercase tracking-widest italic transition-all group",
+                      cardActivation[idx].status === 'idle'
+                        ? "bg-white/10 backdrop-blur-md border border-white/20 text-white hover:bg-white hover:text-black shadow-xl"
+                        : "bg-black/50 border border-white/5 text-zinc-500 cursor-not-allowed"
+                    )}
+                  >
+                    <CreditCard size={18} strokeWidth={2.5} className="group-hover:scale-110 transition-transform" /> 
+                    {cardActivation[idx].status === 'idle' ? 'Activate Card' : 'Pending Approval'}
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Subtle Texture Overlay */}
@@ -239,6 +294,13 @@ export default function DashboardHome() {
             <Link
               key={idx}
               to={action.path}
+              onClick={(e) => {
+                const hasNoMoney = primaryBalance === 0 && secondaryBalance === 0 && tertiaryBalance === 0;
+                if (hasNoMoney) {
+                  e.preventDefault();
+                  setLockModalOpen(true);
+                }
+              }}
               className="flex flex-col items-center justify-center p-6 sm:p-14 bg-zinc-950 border border-white/5 rounded-[3rem] group hover:border-gold/30 transition-all hover:-translate-y-1 shadow-2xl"
             >
               <div className={cn("w-14 h-14 sm:w-20 sm:h-20 rounded-2xl sm:rounded-3xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110 shadow-xl", action.color)}>
