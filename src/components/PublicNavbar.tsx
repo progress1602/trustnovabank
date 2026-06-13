@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, Landmark } from 'lucide-react';
+import { Menu, X, Landmark, Lock } from 'lucide-react';
 
 export default function PublicNavbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -15,54 +15,61 @@ export default function PublicNavbar() {
   }, []);
 
   const navLinks = [
-    { name: 'Home', path: '/' },
-    { name: 'Features', path: '/features' },
-    { name: 'Cards', path: '/cards' },
-    { name: 'Security', path: '/security' },
-    { name: 'About Us', path: '/about' },
-    { name: 'Contact', path: '/contact' },
+    { name: 'HOME', path: '/' },
+    { name: 'ABOUT US', path: '/about' },
+    { name: 'SERVICES', path: '/features' },
+    { name: 'ACCOUNTS', path: '/cards' },
+    { name: 'LOANS', path: '/#loans' },
+    { name: 'INVESTMENTS', path: '/#investments' },
+    { name: 'CONTACT', path: '/contact' },
   ];
 
   return (
-    <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'py-4 bg-black/90 backdrop-blur-xl border-b border-white/5' : 'py-6 bg-transparent'}`}>
+    <nav className={`fixed top-0 w-full z-50 transition-all duration-500 ${scrolled ? 'py-3 bg-black/95 backdrop-blur-xl border-b border-white/5 shadow-2xl' : 'py-5 bg-black/40 backdrop-blur-sm'}`}>
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-3">
-          <div className="bg-gold p-1.5 rounded-lg shadow-[0_0_15px_rgba(255,191,0,0.3)] flex items-center justify-center">
-             <Landmark className="w-6 h-6 text-black" strokeWidth={2.5} />
+        <Link to="/" className="flex items-center gap-3 group">
+          <div className="bg-gold p-2 rounded-xl shadow-[0_0_20px_rgba(212,175,55,0.45)] flex items-center justify-center transition-transform group-hover:scale-105">
+             <Landmark className="w-5 h-5 text-black" strokeWidth={2.5} />
           </div>
-          <span className="text-xl font-display font-black tracking-tighter text-white">
-            TrustNova <span className="text-gold italic">Bank</span>
-          </span>
+          <div className="flex flex-col">
+            <span className="text-xl font-display font-black tracking-widest text-[#FFF] leading-none uppercase">
+              TRUSTNOVA <span className="text-gold">BANK</span>
+            </span>
+            <span className="text-[7px] text-zinc-400 font-bold tracking-[0.25em] uppercase mt-1">
+              Strong Today. Stronger Tomorrow.
+            </span>
+          </div>
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden lg:flex items-center gap-8 text-[11px] font-black uppercase tracking-widest">
+        <div className="hidden lg:flex items-center gap-7 text-[10px] sm:text-[11px] font-black uppercase tracking-[0.15em]">
           {navLinks.map((link) => (
             <Link
               key={link.name}
               to={link.path}
-              className={`transition-colors duration-300 ${
-                location.pathname === link.path ? 'text-gold' : 'text-zinc-400 hover:text-white'
+              className={`transition-colors duration-300 relative py-1.5 ${
+                location.pathname === link.path ? 'text-gold' : 'text-zinc-300 hover:text-white'
               }`}
             >
               {link.name}
+              {location.pathname === link.path && (
+                <motion.div 
+                  layoutId="activePublicNavLine"
+                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-gold rounded-full" 
+                />
+              )}
             </Link>
           ))}
         </div>
 
         {/* Desktop Actions */}
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden md:flex items-center">
           <Link 
             to="/auth/login" 
-            className="px-8 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest border border-gold text-gold hover:bg-gold hover:text-black transition-all duration-300"
+            className="px-6 py-3 bg-gold hover:bg-white text-black font-black uppercase tracking-[0.15em] text-[10px] italic rounded-lg transition-all duration-300 shadow-lg shadow-gold/20 flex items-center gap-2 hover:scale-105"
           >
-            Log In
-          </Link>
-          <Link 
-            to="/auth/register" 
-            className="px-8 py-3 rounded-lg text-[10px] font-black uppercase tracking-widest bg-gold text-black hover:bg-zinc-900 hover:text-gold transition-all duration-300"
-          >
-            Open Account
+            <Lock size={12} className="stroke-[2.5]" />
+            <span>ONLINE BANKING</span>
           </Link>
         </div>
 
@@ -79,23 +86,25 @@ export default function PublicNavbar() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="lg:hidden absolute top-full left-0 w-full bg-black border-b border-white/10 p-8 space-y-8 shadow-2xl"
+            className="lg:hidden absolute top-full left-0 w-full bg-black/95 backdrop-blur-2xl border-b border-white/10 p-8 space-y-8 shadow-2xl"
           >
-            <div className="flex flex-col gap-6 text-[11px] font-black uppercase tracking-widest text-center">
+            <div className="flex flex-col gap-6 text-[10px] font-black uppercase tracking-widest text-center">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   to={link.path}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`${location.pathname === link.path ? 'text-gold' : 'text-zinc-400'}`}
+                  className={`${location.pathname === link.path ? 'text-gold' : 'text-zinc-300'}`}
                 >
                   {link.name}
                 </Link>
               ))}
             </div>
             <div className="flex flex-col gap-4">
-              <Link to="/auth/login" className="w-full py-4 text-center border border-gold text-gold rounded-xl font-black uppercase tracking-widest text-[11px]">Log In</Link>
-              <Link to="/auth/register" className="w-full py-4 text-center bg-gold text-black rounded-xl font-black uppercase tracking-widest text-[11px]">Open Account</Link>
+              <Link to="/auth/login" onClick={() => setIsMenuOpen(false)} className="w-full py-4 text-center bg-gold text-black rounded-lg font-black uppercase tracking-widest text-[10px] italic flex items-center justify-center gap-2">
+                <Lock size={12} className="stroke-[2.5]" />
+                <span>ONLINE BANKING</span>
+              </Link>
             </div>
           </motion.div>
         )}

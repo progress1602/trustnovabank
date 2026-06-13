@@ -5,7 +5,7 @@ import {
   Shield, Smartphone, Globe, ArrowRight, Menu, X, Landmark, 
   Lock, Activity, ShieldCheck, Zap, TrendingUp, CreditCard, 
   CheckCircle2, Star, Users, ArrowUpRight, BarChart3, Fingerprint, 
-  Wallet, Headphones, UserPlus, Mail, ArrowDownLeft
+  Wallet, Headphones, UserPlus, Mail, ArrowDownLeft, MessageSquare
 } from 'lucide-react';
 
 import PublicNavbar from '@/src/components/PublicNavbar';
@@ -41,103 +41,128 @@ export default function LandingPage() {
       <PublicNavbar />
 
       {/* 1. HERO SECTION */}
-      <section className="relative pt-32 pb-20 px-6 overflow-hidden">
-        {/* Background glow effects */}
-        <div className="absolute top-[20%] right-[-10%] w-[600px] h-[600px] bg-gold/10 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute top-[40%] left-[-10%] w-[400px] h-[400px] bg-gold/5 rounded-full blur-[100px] pointer-events-none" />
+      <section 
+        className="relative pt-36 pb-32 md:py-48 px-6 overflow-hidden bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('https://res.cloudinary.com/progresshenry/image/upload/v1780873556/WhatsApp_Image_2026-06-07_at_10.08.55_PM_zvsozj.jpg')" }}
+      >
+        {/* Ambient fade layer: Extra dark on the left under text, ultra-clear on the right over Charlotte's face */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/75 to-transparent z-0" />
         
-        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <h1 className="text-5xl md:text-7xl font-display font-black leading-[1.1] mb-6">
-              Banking <br />
-              Reimagined for <br />
-              the <span className="text-gold">Modern World</span>
-            </h1>
-            <p className="text-zinc-400 text-lg md:text-xl max-w-lg mb-10 leading-relaxed font-medium">
-              Experience secure transfers, instant access, and premium banking designed for your everyday life.
-            </p>
+        {/* Fine background glow overlays */}
+        <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-gold/5 rounded-full blur-[150px] pointer-events-none z-0" />
+        
+        <div className="max-w-7xl mx-auto relative z-10 font-sans">
+          <div className="grid lg:grid-cols-12 gap-12 items-center">
+            {/* Left Content (Text and Action Call To Action) */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              className="lg:col-span-7 xl:col-span-6 space-y-8"
+            >
+              <h1 className="text-5xl md:text-7xl xl:text-[5.2rem] font-display font-black leading-[1.08] tracking-tight text-white">
+                Banking <br />
+                <span className="text-gold">Excellence.</span> <br />
+                Trusted Always.
+              </h1>
+              <p className="text-zinc-200 text-lg md:text-xl max-w-xl leading-relaxed font-semibold">
+                We deliver secure, innovative and personalized banking solutions to help you achieve your goals and build a better future.
+              </p>
+              
+              <div className="flex flex-wrap gap-5 pt-4">
+                <Link to="/auth/register" className="bg-gold hover:bg-white text-black px-10 py-5 rounded-xl font-black uppercase tracking-[0.2em] text-[11px] transition-all flex items-center gap-3 shadow-xl shadow-gold/20 hover:scale-105 duration-300">
+                  <span>DISCOVER MORE</span>
+                  <ArrowRight size={14} className="stroke-[3]" />
+                </Link>
+              </div>
+            </motion.div>
             
-            <div className="flex flex-wrap gap-5 mb-14">
-              <Link to="/auth/register" className="bg-gold text-black px-10 py-4 rounded-lg font-black uppercase tracking-widest text-[11px] hover:scale-105 transition-all shadow-xl shadow-gold/20">
-                Open Free Account
-              </Link>
-              <button className="flex items-center gap-3 px-10 py-4 rounded-lg border border-white/10 hover:border-gold hover:text-gold transition-all text-white font-black uppercase tracking-widest text-[11px]">
-                <div className="w-6 h-6 rounded-full border border-white flex items-center justify-center p-1">
-                   <ArrowUpRight size={14} className="rotate-45" />
+            {/* Right Overlaid Elements floating precisely around Charlotte Hayes */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1, delay: 0.2 }}
+              className="lg:col-span-5 xl:col-span-6 relative min-h-[380px] lg:min-h-[440px] flex flex-col justify-center items-center pointer-events-none"
+            >
+              {/* Branch Manager Badge (Clean, aligned right side of Charlotte) */}
+              <div className="absolute top-[10%] right-4 sm:right-10 lg:right-6 xl:right-12 z-20 pointer-events-auto">
+                <div className="bg-black/90 backdrop-blur-md border border-white/10 rounded-2xl p-4 sm:p-5 shadow-[0_30px_60px_rgba(0,0,0,0.85)] hover:scale-105 transition-transform duration-300 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full border-2 border-gold flex items-center justify-center text-gold bg-gold/10 shrink-0 shadow-[0_0_15px_rgba(212,175,55,0.35)]">
+                     <Users size={22} className="stroke-[2.5]" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <h5 className="text-[13px] font-black text-white uppercase tracking-wider leading-none">Charlotte Hayes</h5>
+                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-1">Branch Manager</p>
+                  </div>
                 </div>
-                Learn More
-              </button>
-            </div>
+              </div>
 
-            <div className="grid grid-cols-3 gap-8 pt-8 border-t border-white/10">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Shield size={16} className="text-gold" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Secure Banking</span>
+              {/* Float Quote / Testimonial Box with Comment Icon (Lower aligned right side of Charlotte) */}
+              <div className="absolute bottom-[10%] right-4 sm:right-10 lg:right-6 xl:right-12 z-20 max-w-[320px] pointer-events-auto">
+                <div className="bg-black/90 backdrop-blur-md border border-white/10 rounded-3xl p-5 sm:p-6 shadow-[0_30px_60px_rgba(0,0,0,0.85)] hover:scale-105 transition-transform duration-300 flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full border-2 border-gold flex items-center justify-center text-gold bg-gold/10 shrink-0 shadow-[0_0_15px_rgba(212,175,55,0.35)]">
+                     <MessageSquare size={22} className="stroke-[2.5]" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-zinc-250 text-xs sm:text-[13px] font-bold uppercase tracking-wider leading-relaxed text-zinc-200">
+                      "Our commitment is to your prosperity and peace of mind."
+                    </p>
+                  </div>
                 </div>
-                <p className="text-[10px] text-zinc-500 font-bold uppercase">Your money is safe</p>
               </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Headphones size={16} className="text-gold" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">24/7 Support</span>
-                </div>
-                <p className="text-[10px] text-zinc-500 font-bold uppercase">We're here anytime</p>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Zap size={16} className="text-gold" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Instant Alerts</span>
-                </div>
-                <p className="text-[10px] text-zinc-500 font-bold uppercase">Stay updated always</p>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="relative flex justify-center items-center py-6 w-full"
-          >
-            {/* Ambient Background Glow */}
-            <div className="absolute inset-0 bg-gradient-to-t from-gold/5 via-transparent to-transparent rounded-full blur-[100px] pointer-events-none" />
-            
-            <div className="relative w-full max-w-3xl lg:max-w-4xl xl:max-w-5xl rounded-[2rem] overflow-hidden border border-white/10 shadow-[0_30px_80px_rgba(0,0,0,0.95)] bg-zinc-950 h-[280px] sm:h-[380px] md:h-[480px] lg:h-[520px]">
-              <img 
-                src="https://res.cloudinary.com/progresshenry/image/upload/v1780317820/trustnova_hero_l1hzby.jpg"
-                alt="TrustNova Premium Banking"
-                className="w-full h-full object-cover block select-none"
-                referrerPolicy="no-referrer"
-              />
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* 2. LIVE STATS SECTION */}
-      <section className="py-20 relative z-20">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {[
-            { label: 'Happy Customers', val: '50K+', icon: Users, color: 'text-gold' },
-            { label: 'Total Transactions', val: '$500M+', icon: Wallet, color: 'text-gold' },
-            { label: 'System Uptime', val: '99.9%', icon: ShieldCheck, color: 'text-gold' },
-            { label: 'Customer Support', val: '24/7', icon: Headphones, color: 'text-gold' }
-          ].map((stat, i) => (
-            <div key={i} className="bg-zinc-900/50 border border-white/5 p-8 rounded-3xl flex items-center gap-6 shadow-2xl relative overflow-hidden group hover:border-gold/30 transition-all">
-               <div className="w-14 h-14 bg-gold/10 rounded-full flex items-center justify-center text-gold group-hover:bg-gold group-hover:text-black transition-all">
-                  <stat.icon size={28} />
-               </div>
-               <div>
-                 <p className="text-white font-display font-black text-2xl group-hover:text-gold transition-colors">{stat.val}</p>
-                 <p className="text-zinc-500 text-[10px] uppercase font-black tracking-widest">{stat.label}</p>
-               </div>
+      {/* 2. CORE SERVICES BANNER */}
+      <section className="bg-zinc-950 border-y border-white/5 relative z-20 py-12 lg:py-16">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0 lg:divide-x lg:divide-white/10">
+            {/* Secure Banking */}
+            <div className="px-2 lg:px-8 flex items-start gap-5">
+              <div className="w-16 h-16 rounded-full border-2 border-gold flex items-center justify-center text-gold shrink-0 bg-gold/10 shadow-[0_0_20px_rgba(212,175,55,0.25)]">
+                 <Shield size={26} className="stroke-[2.5]" />
+              </div>
+              <div className="space-y-1">
+                 <h4 className="text-[13px] sm:text-sm font-black uppercase tracking-wider text-white">Secure Banking</h4>
+                 <p className="text-[11px] text-zinc-400 font-bold uppercase leading-relaxed">Advanced security to protect your money and personal data.</p>
+              </div>
             </div>
-          ))}
+
+            {/* Personalized Service */}
+            <div className="px-2 lg:px-8 flex items-start gap-5">
+              <div className="w-16 h-16 rounded-full border-2 border-gold flex items-center justify-center text-gold shrink-0 bg-gold/10 shadow-[0_0_20px_rgba(212,175,55,0.25)]">
+                 <Users size={26} className="stroke-[2.5]" />
+              </div>
+              <div className="space-y-1">
+                 <h4 className="text-[13px] sm:text-sm font-black uppercase tracking-wider text-white">Personalized Service</h4>
+                 <p className="text-[11px] text-zinc-400 font-bold uppercase leading-relaxed font-sans">Solutions tailored to your unique financial needs.</p>
+              </div>
+            </div>
+
+            {/* Grow Your Wealth */}
+            <div className="px-2 lg:px-8 flex items-start gap-5">
+              <div className="w-16 h-16 rounded-full border-2 border-gold flex items-center justify-center text-gold shrink-0 bg-gold/10 shadow-[0_0_20px_rgba(212,175,55,0.25)]">
+                 <TrendingUp size={26} className="stroke-[2.5]" />
+              </div>
+              <div className="space-y-1">
+                 <h4 className="text-[13px] sm:text-sm font-black uppercase tracking-wider text-white">Grow Your Wealth</h4>
+                 <p className="text-[11px] text-zinc-400 font-bold uppercase leading-relaxed">Smart investment options to help you build and grow your wealth.</p>
+              </div>
+            </div>
+
+            {/* 24/7 Support */}
+            <div className="px-2 lg:px-8 flex items-start gap-5">
+              <div className="w-16 h-16 rounded-full border-2 border-gold flex items-center justify-center text-gold shrink-0 bg-gold/10 shadow-[0_0_20px_rgba(212,175,55,0.25)] font-sans">
+                 <Headphones size={26} className="stroke-[2.5]" />
+              </div>
+              <div className="space-y-1 font-sans">
+                 <h4 className="text-[13px] sm:text-sm font-black uppercase tracking-wider text-white">24/7 Support</h4>
+                 <p className="text-[11px] text-zinc-400 font-bold uppercase leading-relaxed font-sans">We're here for you anytime, anywhere you need us.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
