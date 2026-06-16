@@ -106,14 +106,17 @@ export default function Withdraw() {
   const [receiverInfo, setReceiverInfo] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   
-  const { balance, withdraw, showToast } = useStore();
+  const { balance, totalBalance, withdraw, showToast } = useStore();
   const navigate = useNavigate();
+
+  // Use totalBalance if available, or fall back to balance
+  const actualBalance = totalBalance > 0 ? totalBalance : balance;
 
   const handleWithdrawRequest = (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || !selectedMethod || !receiverInfo) return;
     
-    if (Number(amount) > balance) {
+    if (Number(amount) > actualBalance) {
       showToast("Insufficient liquidity in your current sovereign node.", "error", "LIQUIDITY DEFICIT");
       return;
     }
@@ -153,7 +156,7 @@ export default function Withdraw() {
               <Activity size={40} />
            </div>
            <p className="text-[9px] text-zinc-700 font-black uppercase tracking-[0.4em] mb-2 italic">Available Liquidity</p>
-           <p className="text-2xl font-display font-black text-white italic tracking-tighter">$ {balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+           <p className="text-2xl font-display font-black text-white italic tracking-tighter">$ {actualBalance.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
         </div>
       </div>
 
@@ -240,7 +243,7 @@ export default function Withdraw() {
                          </div>
                          <div className="flex justify-between items-center px-4">
                             <p className="text-[10px] font-black uppercase text-zinc-800 italic">Global Reserve Limit</p>
-                            <p className="text-xs font-black text-gold italic">$ {balance.toLocaleString()}</p>
+                            <p className="text-xs font-black text-gold italic">$ {actualBalance.toLocaleString()}</p>
                          </div>
                       </div>
 

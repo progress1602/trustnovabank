@@ -27,6 +27,7 @@ import {
   Repeat,
   FileText,
   Heart, 
+  Award,
   Briefcase, 
   PieChart, 
   Home, 
@@ -296,13 +297,14 @@ export default function DashboardLayout() {
 
   const SEARCH_SUGGESTIONS = [
     { name: 'Wire Transfer', path: '/dashboard/wire' },
-    { name: 'Pay Bills', path: '/dashboard/bills' },
+    // { name: 'Pay Bills', path: '/dashboard/bills' },
     { name: 'Profile Settings', path: '/dashboard/profile' },
     { name: 'Transaction History', path: '/dashboard/transactions' },
     { name: 'Loan Application', path: '/dashboard/loans' },
     { name: 'Tax Refund', path: '/dashboard/tax-refund' },
     { name: 'Charity Donation', path: '/dashboard/charity' },
-    { name: 'Identity Verification', path: '/dashboard/verification' },
+    { name: 'Sovereign Grants', path: '/dashboard/grants' },
+    // { name: 'Identity Verification', path: '/dashboard/verification' },
   ].filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
   const theme = useStore(state => state.theme);
   const toggleTheme = useStore(state => state.toggleTheme);
@@ -447,9 +449,10 @@ export default function DashboardLayout() {
     { name: 'Wire Transfer', icon: Repeat, path: '/dashboard/wire' },
     { name: 'Transactions', icon: History, path: '/dashboard/transactions' },
     { name: 'Charity', icon: Heart, path: '/dashboard/charity' },
+    { name: 'Grants', icon: Award, path: '/dashboard/grants' },
     { name: 'Loans', icon: Briefcase, path: '/dashboard/loans' },
-    { name: 'Pay Bills', icon: CircleDollarSign, path: '/dashboard/bills' },
-    { name: 'Verification', icon: ShieldCheck, path: '/dashboard/verification' },
+    // { name: 'Pay Bills', icon: CircleDollarSign, path: '/dashboard/bills' },
+    // { name: 'Verification', icon: ShieldCheck, path: '/dashboard/verification' },
     { name: 'Profile', icon: User, path: '/dashboard/profile' },
   ];
 
@@ -686,12 +689,13 @@ export default function DashboardLayout() {
                    className="absolute bottom-20 right-0 w-64 bg-zinc-950 border border-gold/20 rounded-[2.5rem] p-4 space-y-2 shadow-[0_50px_100px_rgba(0,0,0,1)]"
                  >
                     {[
-                      { name: 'Pay Bills', icon: CircleDollarSign, path: '/dashboard/bills' },
+                      // { name: 'Pay Bills', icon: CircleDollarSign, path: '/dashboard/bills' },
                       { name: 'Wire Transfer', icon: Repeat, path: '/dashboard/wire' },
                       { name: 'Charity Donation', icon: Heart, path: '/dashboard/charity' },
+                      { name: 'Sovereign Grants', icon: Award, path: '/dashboard/grants' },
                       { name: 'Apply for Loan', icon: Briefcase, path: '/dashboard/loans' },
                       { name: 'Deposit Funds', icon: ArrowDownCircle, path: '/dashboard/deposit' },
-                      { name: 'Verification', icon: ShieldCheck, path: '/dashboard/verification' },
+                      // { name: 'Verification', icon: ShieldCheck, path: '/dashboard/verification' },
                     ].map((act, i) => (
                       <NavLink 
                         key={i} 

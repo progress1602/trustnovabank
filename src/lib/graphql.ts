@@ -159,6 +159,7 @@ export const PROFILE_QUERY = `
       primaryBalance
       tertiaryBalance
       secondaryBalance
+      totalBalance
     }
   }
 `;
@@ -311,6 +312,44 @@ export const MY_LOANS_QUERY = `
       interestRate
       durationMonths
       repaymentStatus
+      status
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+// 12. MY WIRE TRANSFERS QUERY
+export const MY_WIRE_TRANSFERS_QUERY = `
+  query MyWireTransfers {
+    myWireTransfers {
+      id
+      userId
+      beneficiaryName
+      beneficiaryBank
+      accountNumber
+      swiftCode
+      amount
+      fee
+      reason
+      reference
+      status
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+// 13. MY CHARITIES QUERY
+export const MY_CHARITIES_QUERY = `
+  query MyCharities {
+    myCharities {
+      id
+      userId
+      organizationName
+      amount
+      message
+      reference
       status
       createdAt
       updatedAt

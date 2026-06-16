@@ -21,7 +21,8 @@ import {
   MessageSquare,
   Search,
   Heart,
-  RotateCw
+  RotateCw,
+  Award
 } from 'lucide-react';
 import { cn } from '@/src/lib/utils';
 import { useStore } from '@/src/lib/store';
@@ -152,13 +153,14 @@ export default function DashboardHome() {
 
   const SEARCH_SUGGESTIONS = [
     { name: 'Wire Transfer', path: '/dashboard/wire' },
-    { name: 'Pay Bills', path: '/dashboard/bills' },
+    // { name: 'Pay Bills', path: '/dashboard/bills' },
     { name: 'Profile Settings', path: '/dashboard/profile' },
     { name: 'Transaction History', path: '/dashboard/transactions' },
     { name: 'Loan Application', path: '/dashboard/loans' },
     { name: 'Tax Refund', path: '/dashboard/tax-refund' },
     { name: 'Charity Donation', path: '/dashboard/charity' },
-    { name: 'Identity Verification', path: '/dashboard/verification' },
+    { name: 'Sovereign Grants', path: '/dashboard/grants' },
+    // { name: 'Identity Verification', path: '/dashboard/verification' },
   ].filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
@@ -284,13 +286,14 @@ export default function DashboardHome() {
       {/* Quick Actions Grid */}
       <div className="space-y-4">
         <h4 className="text-[10px] font-black text-zinc-800 uppercase tracking-[0.6em] ml-4 pt-4 italic">Protocol Shortcuts</h4>
-        <div className="grid grid-cols-2 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {[
-            { name: 'Pay Bills', icon: CircleDollarSign, path: '/dashboard/bills', color: 'bg-emerald-600/10 text-emerald-500' },
+            // { name: 'Pay Bills', icon: CircleDollarSign, path: '/dashboard/bills', color: 'bg-emerald-600/10 text-emerald-500' },
             { name: 'Wire Transfer', icon: Repeat, path: '/dashboard/wire', color: 'bg-blue-600/10 text-blue-500' },
+            { name: 'Sovereign Grants', icon: Award, path: '/dashboard/grants', color: 'bg-gold/10 text-gold' },
             { name: 'Loans', icon: Briefcase, path: '/dashboard/loans', color: 'bg-orange-600/10 text-orange-500' },
             { name: 'Charity', icon: Heart, path: '/dashboard/charity', color: 'bg-red-600/10 text-red-500' },
-          ].map((action, idx) => (
+          ].filter(Boolean).map((action, idx) => (
             <Link
               key={idx}
               to={action.path}

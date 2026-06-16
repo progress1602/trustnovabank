@@ -35,6 +35,7 @@ interface UserState {
   primaryBalance: number;
   tertiaryBalance: number;
   secondaryBalance: number;
+  totalBalance: number;
   fullName: string;
   firstName: string;
   lastName: string;
@@ -93,6 +94,7 @@ export const useStore = create<UserState>((set) => ({
   primaryBalance: 0.00,
   tertiaryBalance: 0.00,
   secondaryBalance: 0.00,
+  totalBalance: 0.00,
   fullName: "Henry David",
   firstName: "Henry",
   lastName: "David",
@@ -147,29 +149,63 @@ export const useStore = create<UserState>((set) => ({
     }
     set({ isPinVerified: status });
   },
-  deposit: (amount, method, status = 'Pending') => set((state) => ({
-    balance: status === 'Approved' ? state.balance + amount : state.balance,
-    transactions: [
-      { id: `TX-${Math.floor(Math.random() * 10000)}`, type: 'Deposit', amount, status, date: 'Just now', description: `Deposit via ${method}`, method },
-      ...state.transactions
-    ]
-  })),
+  deposit: (amount, method, status = 'Pending') => set((state) => {
+    const isApproved = status === 'Approved';
+    const nextBalance = isApproved ? state.balance + amount : state.balance;
+    const nextTotalBalance = isApproved ? state.totalBalance + amount : state.totalBalance;
+    const nextPrimary = isApproved ? state.primaryBalance + amount : state.primaryBalance;
+    return {
+      balance: nextBalance,
+      totalBalance: nextTotalBalance,
+      primaryBalance: nextPrimary,
+      accounts: state.accounts.map(acc => 
+        acc.id === 'acc1' ? { ...acc, balance: nextPrimary } :
+        acc.id === 'acc4' ? { ...acc, balance: nextTotalBalance } : acc
+      ),
+      transactions: [
+        { id: `TX-${Math.floor(Math.random() * 10000)}`, type: 'Deposit', amount, status, date: 'Just now', description: `Deposit via ${method}`, method },
+        ...state.transactions
+      ]
+    };
+  }),
 
-  withdraw: (amount, method, address) => set((state) => ({
-    balance: state.balance - amount,
-    transactions: [
-      { id: `TX-${Math.floor(Math.random() * 10000)}`, type: 'Withdraw', amount, status: 'Pending', date: 'Just now', description: `Withdrawal to ${address}`, method },
-      ...state.transactions
-    ]
-  })),
+  withdraw: (amount, method, address) => set((state) => {
+    const nextBalance = state.balance - amount;
+    const nextTotalBalance = state.totalBalance - amount;
+    const nextPrimary = Math.max(0, state.primaryBalance - amount);
+    return {
+      balance: nextBalance,
+      totalBalance: nextTotalBalance,
+      primaryBalance: nextPrimary,
+      accounts: state.accounts.map(acc => 
+        acc.id === 'acc1' ? { ...acc, balance: nextPrimary } :
+        acc.id === 'acc4' ? { ...acc, balance: nextTotalBalance } : acc
+      ),
+      transactions: [
+        { id: `TX-${Math.floor(Math.random() * 10000)}`, type: 'Withdraw', amount, status: 'Pending', date: 'Just now', description: `Withdrawal to ${address}`, method },
+        ...state.transactions
+      ]
+    };
+  }),
 
-  transfer: (amount, recipient, type = 'Transfer') => set((state) => ({
-    balance: state.balance - amount,
-    transactions: [
-      { id: `TX-${Math.floor(Math.random() * 10000)}`, type, amount, status: 'Approved', date: 'Just now', description: `${type} to ${recipient}`, recipient },
-      ...state.transactions
-    ]
-  })),
+  transfer: (amount, recipient, type = 'Transfer') => set((state) => {
+    const nextBalance = state.balance - amount;
+    const nextTotalBalance = state.totalBalance - amount;
+    const nextPrimary = Math.max(0, state.primaryBalance - amount);
+    return {
+      balance: nextBalance,
+      totalBalance: nextTotalBalance,
+      primaryBalance: nextPrimary,
+      accounts: state.accounts.map(acc => 
+        acc.id === 'acc1' ? { ...acc, balance: nextPrimary } :
+        acc.id === 'acc4' ? { ...acc, balance: nextTotalBalance } : acc
+      ),
+      transactions: [
+        { id: `TX-${Math.floor(Math.random() * 10000)}`, type, amount, status: 'Approved', date: 'Just now', description: `${type} to ${recipient}`, recipient },
+        ...state.transactions
+      ]
+    };
+  }),
 
   orderCard: (type, name) => set((state) => ({
     cards: [
@@ -250,8 +286,15 @@ export const useStore = create<UserState>((set) => ({
       primaryBalance: user.primaryBalance ?? 0.00,
       tertiaryBalance: user.tertiaryBalance ?? 0.00,
       secondaryBalance: user.secondaryBalance ?? 0.00,
-      balance: user.primaryBalance ?? 0.00,
+      totalBalance: user.totalBalance != null ? user.totalBalance : ((user.primaryBalance ?? 0.00) + (user.secondaryBalance ?? 0.00) + (user.tertiaryBalance ?? 0.00)),
+      balance: user.totalBalance != null ? user.totalBalance : ((user.primaryBalance ?? 0.00) + (user.secondaryBalance ?? 0.00) + (user.tertiaryBalance ?? 0.00)),
       profilePic: sanitizedProfilePic,
+      accounts: [
+        { id: 'acc1', name: '360 Checking', number: '1424', type: 'Checking', balance: user.primaryBalance ?? 0.00, status: 'Active' },
+        { id: 'acc2', name: '360 Checking (Secondary)', number: '6065', type: 'Checking', balance: user.secondaryBalance ?? 0.00, status: 'Active' },
+        { id: 'acc3', name: '360 Performance Savings', number: '7821', type: 'Savings', balance: user.tertiaryBalance ?? 0.00, status: 'Active' },
+        { id: 'acc4', name: 'QUICKSILVER Credit', number: '4432', type: 'Credit', balance: user.totalBalance != null ? user.totalBalance : ((user.primaryBalance ?? 0.00) + (user.secondaryBalance ?? 0.00) + (user.tertiaryBalance ?? 0.00)), status: 'Active' },
+      ],
     };
   }),
   updateCardActivation: (cardIdx, data) => set((state) => ({

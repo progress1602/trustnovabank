@@ -34,14 +34,17 @@ export default function Transfer() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   
-  const { transfer, balance, showToast } = useStore();
+  const { transfer, balance, totalBalance, showToast } = useStore();
   const navigate = useNavigate();
+
+  // Use totalBalance if available, or fall back to balance
+  const actualBalance = totalBalance > 0 ? totalBalance : balance;
 
   const handleTransfer = (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount) return;
     
-    if (Number(amount) > balance) {
+    if (Number(amount) > actualBalance) {
       showToast("Insufficient liquidity for this settlement sequence.", "error", "LIQUIDITY DEFICIT");
       return;
     }

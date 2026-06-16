@@ -33,7 +33,7 @@ const BILL_CATEGORIES = [
 ];
 
 export default function PayBills() {
-  const { balance, withdraw, showToast } = useStore();
+  const { balance, totalBalance, withdraw, showToast } = useStore();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<typeof BILL_CATEGORIES[0] | null>(null);
@@ -42,8 +42,13 @@ export default function PayBills() {
   const [accountNumber, setAccountNumber] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Use totalBalance if available, or fall back to balance
+  const actualBalance = totalBalance > 0 ? totalBalance : balance;
+
+  const lowBalance = actualBalance < Number(amount);
+
   const handlePay = () => {
-    if (!amount || !selectedBiller || !accountNumber) return;
+    if (!amount || !selectedBiller || !accountNumber || lowBalance) return;
     setIsProcessing(true);
     setTimeout(() => {
       withdraw(Number(amount), `Bill: ${selectedBiller}`, 'Completed');
@@ -204,7 +209,7 @@ export default function PayBills() {
                       <div className="flex justify-between items-center p-6 bg-black border border-white/5 rounded-3xl">
                          <div>
                             <p className="text-[10px] font-black text-zinc-700 uppercase tracking-widest italic">Node Balance</p>
-                            <p className="text-xl font-display font-black text-gold italic">${balance.toLocaleString()}</p>
+                            <p className="text-xl font-display font-black text-gold italic">${actualBalance.toLocaleString()}</p>
                          </div>
                          <div className="text-right">
                             <p className="text-[10px] font-black text-zinc-700 uppercase tracking-widest italic">Fee Protocol</p>
@@ -212,9 +217,19 @@ export default function PayBills() {
                          </div>
                       </div>
 
+                      {lowBalance && Number(amount) > 0 && (
+                        <div className="bg-[#FFFFCC] p-6 border border-amber-200 rounded-[2rem] flex gap-4 items-start animate-in fade-in slide-in-from-top-4 duration-500">
+                          <div className="space-y-1">
+                            <p className="text-[10px] font-black text-amber-900 leading-relaxed uppercase tracking-tight italic">
+                              INSUFFICIENT NODES LIQUIDITY. Please deposit funds or adjust the settlement amount.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+
                       <button 
                          onClick={handlePay}
-                         disabled={isProcessing || !amount || !selectedBiller || !accountNumber}
+                         disabled={isProcessing || !amount || !selectedBiller || !accountNumber || lowBalance}
                          className="w-full h-24 bg-gold text-black rounded-[2.5rem] text-[11px] font-black uppercase tracking-[0.5em] italic shadow-[0_20px_50px_rgba(212,175,55,0.25)] hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-4 disabled:opacity-30 group"
                       >
                          {isProcessing ? 'PROCESSING PACKETS...' : <>INITIALIZE SETTLEMENT <ArrowRight size={22} className="group-hover:translate-x-2 transition-transform" /></>}
