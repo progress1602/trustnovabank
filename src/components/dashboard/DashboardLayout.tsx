@@ -588,15 +588,6 @@ export default function DashboardLayout() {
           </div>
 
           <div className="flex items-center gap-4">
-             {/* Messages */}
-             <button 
-               onClick={() => setShowSupportChat(true)}
-               className="w-12 h-12 rounded-xl bg-gold/5 border border-gold/10 flex items-center justify-center text-zinc-500 hover:text-gold transition-all relative group"
-             >
-                <MessageSquare size={22} strokeWidth={2.5} />
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-gold text-black text-[10px] font-black rounded-full border-2 border-black flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">1</span>
-             </button>
-
              {/* Notifications */}
              <div className="relative">
                 <button 
@@ -914,14 +905,7 @@ export default function DashboardLayout() {
           )}
         </AnimatePresence>
 
-        {/* Support Chat */}
-        <AnimatePresence>
-          {showSupportChat && (
-            <SupportChat onClose={() => setShowSupportChat(false)} />
-          )}
-        </AnimatePresence>
-
-        {/* Global Toast Notification */}
+         {/* Global Toast Notification */}
         <AnimatePresence>
           {toast?.show && (
             <motion.div

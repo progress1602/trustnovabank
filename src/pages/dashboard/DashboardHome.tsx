@@ -18,7 +18,6 @@ import {
   Briefcase,
   FileText,
   Clock,
-  MessageSquare,
   Search,
   Heart,
   RotateCw,
