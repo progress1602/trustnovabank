@@ -357,3 +357,52 @@ export const MY_CHARITIES_QUERY = `
   }
 `;
 
+// 14. CREATE GRANT MUTATION
+export const CREATE_GRANT_MUTATION = `
+  mutation CreateGrant($input: CreateGrantInput!) {
+    createGrant(input: $input) {
+      id
+      grantId
+      userId
+      grantType
+      grantTitle
+      businessName
+      federalTaxId
+      industrySector
+      amount
+      purpose
+      status
+      remarks
+      processedBy
+      processedAt
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+// 15. MY GRANTS QUERY
+export const MY_GRANTS_QUERY = `
+  query MyGrants {
+    myGrants {
+      id
+      grantId
+      userId
+      grantType
+      grantTitle
+      businessName
+      federalTaxId
+      industrySector
+      amount
+      purpose
+      status
+      remarks
+      processedBy
+      processedAt
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+
