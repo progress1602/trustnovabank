@@ -42,11 +42,11 @@ export default function LandingPage() {
 
       {/* 1. HERO SECTION */}
       <section 
-        className="relative pt-36 pb-32 md:py-48 px-6 overflow-hidden bg-cover bg-center bg-no-repeat"
+        className="relative pt-36 pb-32 md:py-48 px-6 overflow-hidden bg-cover bg-[position:78%_center] lg:bg-center bg-no-repeat"
         style={{ backgroundImage: "url('https://res.cloudinary.com/progresshenry/image/upload/v1780873556/WhatsApp_Image_2026-06-07_at_10.08.55_PM_zvsozj.jpg')" }}
       >
-        {/* Ambient fade layer: Extra dark on the left under text, ultra-clear on the right over Charlotte's face */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/75 to-transparent z-0" />
+        {/* Ambient fade layer: Rich vertical gradient on mobile to assure high readability, reverting to lateral gradient on desktop */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/95 via-black/80 to-black/95 lg:bg-gradient-to-r lg:from-black/95 lg:via-black/75 lg:to-transparent z-0" />
         
         {/* Fine background glow overlays */}
         <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-gold/5 rounded-full blur-[150px] pointer-events-none z-0" />
@@ -60,12 +60,12 @@ export default function LandingPage() {
               transition={{ duration: 0.8 }}
               className="lg:col-span-7 xl:col-span-6 space-y-8"
             >
-              <h1 className="text-5xl md:text-7xl xl:text-[5.2rem] font-display font-black leading-[1.08] tracking-tight text-white">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl xl:text-[5.2rem] font-display font-black leading-[1.08] tracking-tight text-white">
                 Banking <br />
                 <span className="text-gold">Excellence.</span> <br />
                 Trusted Always.
               </h1>
-              <p className="text-zinc-200 text-lg md:text-xl max-w-xl leading-relaxed font-semibold">
+              <p className="text-zinc-200 text-base md:text-lg lg:text-xl max-w-xl leading-relaxed font-semibold">
                 We deliver secure, innovative and personalized banking solutions to help you achieve your goals and build a better future.
               </p>
               
@@ -82,10 +82,10 @@ export default function LandingPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1, delay: 0.2 }}
-              className="lg:col-span-5 xl:col-span-6 relative min-h-[380px] lg:min-h-[440px] flex flex-col justify-center items-center pointer-events-none"
+              className="lg:col-span-5 xl:col-span-6 relative min-h-[280px] lg:min-h-[440px] w-full flex flex-col md:flex-row lg:flex-col justify-center items-center gap-6 lg:gap-0 mt-8 lg:mt-0 pointer-events-none"
             >
               {/* Branch Manager Badge (Clean, aligned right side of Charlotte) */}
-              <div className="absolute top-[10%] right-4 sm:right-10 lg:right-6 xl:right-12 z-20 pointer-events-auto">
+              <div className="relative lg:absolute lg:top-[12%] lg:right-6 xl:right-12 z-20 pointer-events-auto w-full max-w-xs">
                 <div className="bg-black/90 backdrop-blur-md border border-white/10 rounded-2xl p-4 sm:p-5 shadow-[0_30px_60px_rgba(0,0,0,0.85)] hover:scale-105 transition-transform duration-300 flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full border-2 border-gold flex items-center justify-center text-gold bg-gold/10 shrink-0 shadow-[0_0_15px_rgba(212,175,55,0.35)]">
                      <Users size={22} className="stroke-[2.5]" />
@@ -98,14 +98,14 @@ export default function LandingPage() {
               </div>
 
               {/* Float Quote / Testimonial Box with Comment Icon (Lower aligned right side of Charlotte) */}
-              <div className="absolute bottom-[10%] right-4 sm:right-10 lg:right-6 xl:right-12 z-20 max-w-[320px] pointer-events-auto">
+              <div className="relative lg:absolute lg:bottom-[12%] lg:right-6 xl:right-12 z-20 w-full max-w-xs pointer-events-auto">
                 <div className="bg-black/90 backdrop-blur-md border border-white/10 rounded-3xl p-5 sm:p-6 shadow-[0_30px_60px_rgba(0,0,0,0.85)] hover:scale-105 transition-transform duration-300 flex items-start gap-4">
                   <div className="w-12 h-12 rounded-full border-2 border-gold flex items-center justify-center text-gold bg-gold/10 shrink-0 shadow-[0_0_15px_rgba(212,175,55,0.35)]">
                      <MessageSquare size={22} className="stroke-[2.5]" />
                   </div>
                   <div className="space-y-1">
-                    <p className="text-zinc-250 text-xs sm:text-[13px] font-bold uppercase tracking-wider leading-relaxed text-zinc-200">
-                      "Our commitment is to your prosperity and peace of mind."
+                    <p className="text-zinc-200 text-xs sm:text-[13px] font-semibold uppercase tracking-wider leading-relaxed">
+                      "Our commitment is to your prosperity and security."
                     </p>
                   </div>
                 </div>
