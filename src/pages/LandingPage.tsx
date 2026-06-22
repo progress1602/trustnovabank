@@ -41,18 +41,25 @@ export default function LandingPage() {
       <PublicNavbar />
 
       {/* 1. HERO SECTION */}
-      <section 
-        className="relative pt-36 pb-32 md:py-48 px-6 overflow-hidden bg-cover bg-[position:78%_center] lg:bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('https://res.cloudinary.com/progresshenry/image/upload/v1780873556/WhatsApp_Image_2026-06-07_at_10.08.55_PM_zvsozj.jpg')" }}
-      >
-        {/* Ambient fade layer: Rich vertical gradient on mobile to assure high readability, reverting to lateral gradient on desktop */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/95 via-black/80 to-black/95 lg:bg-gradient-to-r lg:from-black/95 lg:via-black/75 lg:to-transparent z-0" />
-        
+      <section className="relative pt-36 pb-24 md:py-48 px-6 overflow-hidden bg-black">
+        {/* Background image ONLY on desktop/tablet (md & lg screens) */}
+        <div className="absolute inset-0 hidden md:block select-none pointer-events-none z-0">
+          <img 
+            src="https://res.cloudinary.com/progresshenry/image/upload/v1780873556/WhatsApp_Image_2026-06-07_at_10.08.55_PM_zvsozj.jpg" 
+            alt="TrustNova Background Representative" 
+            className="w-full h-full object-cover object-[center_35%]"
+            referrerPolicy="no-referrer"
+          />
+          {/* Ambient fade layer: Extra dark on the left under text, ultra-clear on the right over Charlotte's face */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/75 to-transparent" />
+        </div>
+
         {/* Fine background glow overlays */}
         <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] bg-gold/5 rounded-full blur-[150px] pointer-events-none z-0" />
+        <div className="absolute -bottom-10 left-[-10%] w-[400px] h-[400px] bg-gold/5 rounded-full blur-[120px] pointer-events-none z-0" />
         
         <div className="max-w-7xl mx-auto relative z-10 font-sans">
-          <div className="grid lg:grid-cols-12 gap-12 items-center">
+          <div className="grid lg:grid-cols-12 gap-16 lg:gap-12 items-center">
             {/* Left Content (Text and Action Call To Action) */}
             <motion.div
               initial={{ opacity: 0, x: -30 }}
@@ -75,17 +82,59 @@ export default function LandingPage() {
                   <ArrowRight size={14} className="stroke-[3]" />
                 </Link>
               </div>
+
+              {/* MOBILE ONLY STANDALONE GRID IMAGE (shown below writeup, only on < md views where the background image is hidden) */}
+              <div className="block md:hidden mt-12">
+                <div className="relative w-full max-w-[340px] mx-auto aspect-[4/5] rounded-[3rem] p-1 bg-gradient-to-b from-gold/30 via-white/10 to-transparent">
+                  <div className="relative w-full h-full rounded-[2.8rem] overflow-hidden bg-zinc-950 shadow-[0_30px_80px_rgba(0,0,0,0.9)]">
+                    <img 
+                      src="https://res.cloudinary.com/progresshenry/image/upload/v1780873556/WhatsApp_Image_2026-06-07_at_10.08.55_PM_zvsozj.jpg" 
+                      alt="Charlotte Hayes - TrustNova Rep" 
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover object-[center_35%]"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  </div>
+
+                  {/* Branch Manager Badge (Clean, floating overlay) */}
+                  <div className="absolute -top-6 -left-4 z-20 pointer-events-auto w-[180px]">
+                    <div className="bg-black/95 backdrop-blur-md border border-white/10 rounded-2xl p-3 shadow-[0_20px_40px_rgba(0,0,0,0.85)] flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full border border-gold/40 flex items-center justify-center text-gold bg-gold/10 shrink-0 shadow-[0_0_15px_rgba(212,175,55,0.2)]">
+                         <Users size={16} className="stroke-[2.5]" />
+                      </div>
+                      <div className="space-y-0.5">
+                        <h5 className="text-[10px] font-black text-white uppercase tracking-wider leading-none">Charlotte Hayes</h5>
+                        <p className="text-[7.5px] text-zinc-400 font-bold uppercase tracking-widest mt-1">Branch Manager</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Float Quote / Testimonial Box with Comment Icon */}
+                  <div className="absolute -bottom-6 -right-4 z-20 w-[200px] pointer-events-auto">
+                    <div className="bg-black/95 backdrop-blur-md border border-white/10 rounded-2xl p-3.5 shadow-[0_20px_40px_rgba(0,0,0,0.85)] flex items-start gap-2.5">
+                      <div className="w-8 h-8 rounded-full border border-gold/40 flex items-center justify-center text-gold bg-gold/10 shrink-0 shadow-[0_0_15px_rgba(212,175,55,0.2)]">
+                         <MessageSquare size={14} className="stroke-[2.5]" />
+                      </div>
+                      <div className="space-y-0.5">
+                        <p className="text-zinc-200 text-[8px] font-semibold uppercase tracking-wider leading-relaxed">
+                          "Our commitment is to your prosperity and security."
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </motion.div>
             
-            {/* Right Overlaid Elements floating precisely around Charlotte Hayes */}
+            {/* DESKTOP/TABLET Right Overlaid Elements floating precisely around Charlotte Hayes (Only shown on md & larger) */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1, delay: 0.2 }}
-              className="lg:col-span-5 xl:col-span-6 relative min-h-[280px] lg:min-h-[440px] w-full flex flex-col md:flex-row lg:flex-col justify-center items-center gap-6 lg:gap-0 mt-8 lg:mt-0 pointer-events-none"
+              className="hidden md:flex lg:col-span-5 xl:col-span-6 relative min-h-[380px] lg:min-h-[440px] flex-col justify-center items-center pointer-events-none"
             >
               {/* Branch Manager Badge (Clean, aligned right side of Charlotte) */}
-              <div className="relative lg:absolute lg:top-[12%] lg:right-6 xl:right-12 z-20 pointer-events-auto w-full max-w-xs">
+              <div className="absolute top-[10%] right-4 sm:right-10 lg:right-6 xl:right-12 z-20 pointer-events-auto">
                 <div className="bg-black/90 backdrop-blur-md border border-white/10 rounded-2xl p-4 sm:p-5 shadow-[0_30px_60px_rgba(0,0,0,0.85)] hover:scale-105 transition-transform duration-300 flex items-center gap-4">
                   <div className="w-12 h-12 rounded-full border-2 border-gold flex items-center justify-center text-gold bg-gold/10 shrink-0 shadow-[0_0_15px_rgba(212,175,55,0.35)]">
                      <Users size={22} className="stroke-[2.5]" />
@@ -98,7 +147,7 @@ export default function LandingPage() {
               </div>
 
               {/* Float Quote / Testimonial Box with Comment Icon (Lower aligned right side of Charlotte) */}
-              <div className="relative lg:absolute lg:bottom-[12%] lg:right-6 xl:right-12 z-20 w-full max-w-xs pointer-events-auto">
+              <div className="absolute bottom-[10%] right-4 sm:right-10 lg:right-6 xl:right-12 z-20 max-w-[320px] pointer-events-auto">
                 <div className="bg-black/90 backdrop-blur-md border border-white/10 rounded-3xl p-5 sm:p-6 shadow-[0_30px_60px_rgba(0,0,0,0.85)] hover:scale-105 transition-transform duration-300 flex items-start gap-4">
                   <div className="w-12 h-12 rounded-full border-2 border-gold flex items-center justify-center text-gold bg-gold/10 shrink-0 shadow-[0_0_15px_rgba(212,175,55,0.35)]">
                      <MessageSquare size={22} className="stroke-[2.5]" />
