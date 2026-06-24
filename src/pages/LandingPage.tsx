@@ -88,7 +88,7 @@ export default function LandingPage() {
                 <div className="relative w-full max-w-[340px] mx-auto aspect-[4/5] rounded-[3rem] p-1 bg-gradient-to-b from-gold/30 via-white/10 to-transparent">
                   <div className="relative w-full h-full rounded-[2.8rem] overflow-hidden bg-zinc-950 shadow-[0_30px_80px_rgba(0,0,0,0.9)]">
                     <img 
-                      src="https://res.cloudinary.com/progresshenry/image/upload/v1780873556/WhatsApp_Image_2026-06-07_at_10.08.55_PM_zvsozj.jpg" 
+                      src="https://res.cloudinary.com/progresshenry/image/upload/v1782325048/mobile_view_tpg0gw.jpg" 
                       alt="Charlotte Hayes - TrustNova Rep" 
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover object-[center_35%]"
