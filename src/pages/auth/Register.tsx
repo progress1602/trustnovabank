@@ -23,6 +23,7 @@ export default function Register() {
     confirmPassword: '',
     pin: '',
     occupation: '',
+    ssn: '',
     country: 'United States',
     state: 'New York',
     currency: 'USD',
@@ -98,6 +99,11 @@ export default function Register() {
       newErrors.pin = "PIN must be exactly 4 digits.";
     }
 
+    const ssnDigits = formData.ssn.replace(/\D/g, '');
+    if (ssnDigits.length !== 9) {
+      newErrors.ssn = "SSN must contain exactly 9 digits.";
+    }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -132,6 +138,7 @@ export default function Register() {
           username: formData.username,
           phoneNumber: formData.phone,
           occupation: formData.occupation,
+          ssn: formData.ssn,
           country: formData.country,
           stateProvince: formData.state,
           currencyProtocol: formData.currency,
@@ -392,13 +399,26 @@ export default function Register() {
                       />
                    </div>
 
-                   <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <StateSelect 
                         label="State / Province *"
                         country={formData.country}
                         value={formData.state}
                         onChange={val => setFormData({...formData, state: val})}
                       />
+                      <div>
+                         <label className={labelClasses}>Social Security Number (SSN) *</label>
+                         <div className="relative group">
+                            <input 
+                              type="text" required placeholder="000-00-0000" 
+                              className={cn(inputClasses, errors.ssn && "border-red-500")}
+                              value={formData.ssn}
+                              onChange={e => setFormData({...formData, ssn: e.target.value})}
+                            />
+                            <Hash size={16} className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-800 group-focus-within:text-gold transition-colors" />
+                         </div>
+                         {errors.ssn && <p className="text-[8px] text-red-500 mt-2 font-black uppercase tracking-widest">{errors.ssn}</p>}
+                      </div>
                    </div>
                 </div>
 

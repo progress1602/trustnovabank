@@ -30,7 +30,7 @@ export default function Profile() {
   const { 
     fullName, firstName, lastName, email, phone, occupation, country, 
     address, city, state, zip, dob, profilePic, pin, currency, accountType,
-    username, logout, updateUser 
+    username, ssn, logout, updateUser 
   } = useStore();
   
   const [isEditing, setIsEditing] = useState(false);
@@ -54,7 +54,8 @@ export default function Profile() {
     pin: pin || '',
     currency: currency || 'USD',
     accountType: accountType || 'Savings/Checking',
-    username: username || ''
+    username: username || '',
+    ssn: ssn || ''
   });
 
   const handleCountryChange = (countryName: string) => {
@@ -87,9 +88,10 @@ export default function Profile() {
       pin: pin || '',
       currency: currency || 'USD',
       accountType: accountType || 'Savings/Checking',
-      username: username || ''
+      username: username || '',
+      ssn: ssn || ''
     });
-  }, [firstName, lastName, email, phone, occupation, country, address, city, state, zip, dob, pin, currency, accountType, username]);
+  }, [firstName, lastName, email, phone, occupation, country, address, city, state, zip, dob, pin, currency, accountType, username, ssn]);
 
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success'>('idle');
   const [saveError, setSaveError] = useState('');
@@ -423,6 +425,14 @@ export default function Profile() {
                     value={formData.occupation}
                     onChange={e => setFormData({...formData, occupation: e.target.value})}
                     className={inputClasses} 
+                  />
+                </div>
+                <div className="col-span-full space-y-2">
+                  <label className={labelClasses}>Social Security Number (SSN)</label>
+                  <input 
+                    disabled={true}
+                    value={formData.ssn || 'NOT SPECIFIED'}
+                    className={cn(inputClasses, "opacity-70 bg-zinc-950/40 select-all cursor-not-allowed")} 
                   />
                 </div>
               </div>

@@ -53,6 +53,7 @@ interface UserState {
   state: string;
   zip: string;
   dob: string;
+  ssn: string;
   profilePic: string | null;
   pin: string;
   tier: string;
@@ -112,6 +113,7 @@ export const useStore = create<UserState>((set) => ({
   state: "Greater London",
   zip: "EC1A 1BB",
   dob: "1990-01-01",
+  ssn: "",
   profilePic: null,
   pin: localStorage.getItem('user_pin') || "0000",
   tier: "Member",
@@ -283,6 +285,7 @@ export const useStore = create<UserState>((set) => ({
       state: user.stateProvince || '',
       zip: user.zipPostalCode || '',
       dob: dob,
+      ssn: user.ssn || '',
       primaryBalance: user.primaryBalance ?? 0.00,
       tertiaryBalance: user.tertiaryBalance ?? 0.00,
       secondaryBalance: user.secondaryBalance ?? 0.00,
@@ -317,6 +320,7 @@ export const useStore = create<UserState>((set) => ({
       email: "",
       phone: "",
       username: "",
+      ssn: "",
       accountNumber: "9909219487",
       profilePic: null,
       transactions: [],

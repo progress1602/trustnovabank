@@ -38,7 +38,14 @@ export async function graphqlFetch<T = any>(query: string, variables: any = {}):
   const result: GraphQLResponse<T> = await response.json();
 
   if (result.errors && result.errors.length > 0) {
-    throw new Error(result.errors[0].message || 'Execution error during query parsing.');
+    // If errors are specifically about the restricted "ssn" field, ignore them so login/register/profile fetching doesn't block the user
+    const realErrors = result.errors.filter(err => {
+      if (err.path && err.path.includes('ssn')) return false;
+      return true;
+    });
+    if (realErrors.length > 0) {
+      throw new Error(realErrors[0].message || 'Execution error during query parsing.');
+    }
   }
 
   if (!result.data) {
@@ -59,6 +66,7 @@ export const REGISTER_MUTATION = `
         id
         email
         username
+        ssn
         occupation
         address
         country
@@ -97,6 +105,7 @@ export const LOGIN_MUTATION = `
         id
         email
         username
+        ssn
         occupation
         address
         country
@@ -131,6 +140,7 @@ export const PROFILE_QUERY = `
       id
       email
       username
+      ssn
       occupation
       address
       country
