@@ -31,6 +31,7 @@ interface Account {
 }
 
 interface UserState {
+  id: string;
   balance: number;
   primaryBalance: number;
   tertiaryBalance: number;
@@ -91,6 +92,7 @@ interface UserState {
 }
 
 export const useStore = create<UserState>((set) => ({
+  id: "",
   balance: 0.00,
   primaryBalance: 0.00,
   tertiaryBalance: 0.00,
@@ -130,7 +132,7 @@ export const useStore = create<UserState>((set) => ({
   accounts: [
     { id: 'acc1', name: '360 Checking', number: '1424', type: 'Checking', balance: 0.00, status: 'Active' },
     { id: 'acc2', name: '360 Checking', number: '6065', type: 'Checking', balance: 0.00, status: 'Active' },
-    { id: 'acc3', name: '360 Performance Savings', number: '7821', type: 'Savings', balance: 0.00, status: 'Active' },
+    { id: 'acc3', name: '360 Tertiary Checking', number: '7821', type: 'Savings', balance: 0.00, status: 'Active' },
     { id: 'acc4', name: 'QUICKSILVER Credit', number: '4432', type: 'Credit', balance: 0.00, status: 'Active' },
   ],
   toast: null,
@@ -268,6 +270,7 @@ export const useStore = create<UserState>((set) => ({
     const sanitizedProfilePic = (profileImage && profileImage !== 'null' && profileImage !== 'undefined' && profileImage.trim() !== '') ? profileImage : null;
 
     return {
+      id: user.id || '',
       firstName: first,
       lastName: last,
       fullName: `${first} ${last}`.trim() || 'Henry David',
@@ -295,7 +298,7 @@ export const useStore = create<UserState>((set) => ({
       accounts: [
         { id: 'acc1', name: '360 Checking', number: '1424', type: 'Checking', balance: user.primaryBalance ?? 0.00, status: 'Active' },
         { id: 'acc2', name: '360 Checking (Secondary)', number: '6065', type: 'Checking', balance: user.secondaryBalance ?? 0.00, status: 'Active' },
-        { id: 'acc3', name: '360 Performance Savings', number: '7821', type: 'Savings', balance: user.tertiaryBalance ?? 0.00, status: 'Active' },
+        { id: 'acc3', name: '360 Tertiary Checking', number: '7821', type: 'Savings', balance: user.tertiaryBalance ?? 0.00, status: 'Active' },
         { id: 'acc4', name: 'QUICKSILVER Credit', number: '4432', type: 'Credit', balance: user.totalBalance != null ? user.totalBalance : ((user.primaryBalance ?? 0.00) + (user.secondaryBalance ?? 0.00) + (user.tertiaryBalance ?? 0.00)), status: 'Active' },
       ],
     };
@@ -313,6 +316,7 @@ export const useStore = create<UserState>((set) => ({
     set({ 
       isAuthenticated: false, 
       isPinVerified: false,
+      id: "",
       balance: 0.00,
       fullName: "Henry David",
       firstName: "Henry",

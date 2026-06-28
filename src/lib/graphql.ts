@@ -415,4 +415,22 @@ export const MY_GRANTS_QUERY = `
   }
 `;
 
+// 16. BALANCE MUTATIONS
+export const CREDIT_USER_BALANCE_MUTATION = `
+  mutation CreditUserBalance($input: BalanceUpdateInput!) {
+    creditUserBalance(input: $input) {
+      id
+    }
+  }
+`;
+
+export const DEBIT_USER_BALANCE_MUTATION = `
+  mutation DebitUserBalance($input: BalanceUpdateInput!) {
+    debitUserBalance(input: $input) {
+      id
+    }
+  }
+`;
+
+
 
